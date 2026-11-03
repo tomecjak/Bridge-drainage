@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Odvodnenie mosta – hltnosť odvodňovačov</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3F5F6; --surface:#FFFFFF; --ink:#1C2226; --muted:#5A6670; --line:#D3DADF; --line-strong:#9AA6AE;
+  --asphalt:#3E474E; --concrete:#D4D8DB; --concrete-dark:#B5BBC0;
+  --water:#1E6CCB; --water-fill:rgba(30,108,203,.20); --water-hatch:rgba(30,108,203,.55);
+  --ok:#22784A; --ok-bg:rgba(34,120,74,.09); --bad:#BE3A2D; --bad-bg:rgba(190,58,45,.09); --warn:#A86A12;
+  --overflow:rgba(190,58,45,.07);
+  --deck:#E3E6E8; --water-deep:rgba(30,108,203,.42); --water-shallow:rgba(30,108,203,.06); --zone:rgba(30,108,203,.10); --pass:#8C99A3;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#13171A; --surface:#1B2125; --ink:#E4E9EC; --muted:#99A5AE; --line:#2C353B; --line-strong:#56626B;
+    --asphalt:#A2ACB3; --concrete:#343D43; --concrete-dark:#48525A;
+    --water:#5EA4F2; --water-fill:rgba(94,164,242,.22); --water-hatch:rgba(94,164,242,.6);
+    --ok:#4DC47F; --ok-bg:rgba(77,196,127,.10); --bad:#F2725F; --bad-bg:rgba(242,114,95,.10); --warn:#E5A93D;
+    --overflow:rgba(242,114,95,.08);
+    --deck:#262D32; --water-deep:rgba(94,164,242,.45); --water-shallow:rgba(94,164,242,.06); --zone:rgba(94,164,242,.12); --pass:#7D8A93;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#13171A; --surface:#1B2125; --ink:#E4E9EC; --muted:#99A5AE; --line:#2C353B; --line-strong:#56626B;
+  --asphalt:#A2ACB3; --concrete:#343D43; --concrete-dark:#48525A;
+  --water:#5EA4F2; --water-fill:rgba(94,164,242,.22); --water-hatch:rgba(94,164,242,.6);
+  --ok:#4DC47F; --ok-bg:rgba(77,196,127,.10); --bad:#F2725F; --bad-bg:rgba(242,114,95,.10); --warn:#E5A93D;
+  --overflow:rgba(242,114,95,.08);
+  --deck:#262D32; --water-deep:rgba(94,164,242,.45); --water-shallow:rgba(94,164,242,.06); --zone:rgba(94,164,242,.12); --pass:#7D8A93;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 "Barlow",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.num,.tick,input,select,.big{font-family:"Barlow Semi Condensed","Barlow",system-ui,"Segoe UI",Arial,sans-serif;font-variant-numeric:tabular-nums}
+sub{font-size:.72em;vertical-align:-.25em;line-height:0}
+sup{font-size:.72em;vertical-align:.45em;line-height:0}
+button{font:inherit}
+:focus-visible{outline:2px solid var(--water);outline-offset:2px}
+
+.top{max-width:1340px;margin:0 auto;padding:28px 20px 18px;display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end;justify-content:space-between}
+.top h1{margin:0;font-size:clamp(1.7rem,3.2vw,2.35rem);line-height:1.1;font-weight:700;letter-spacing:-.01em}
+.top p{margin:.45rem 0 0;color:var(--muted);max-width:62ch}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn{border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);padding:.5rem .95rem;border-radius:4px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.btn.primary:hover{opacity:.9}
+
+.verdicts{max-width:1300px;margin:0 auto 26px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--surface);border:1px solid var(--line)}
+.wrapv{padding:0 20px}
+.verdict{padding:14px 18px 15px;border-left:4px solid var(--line-strong);border-right:1px solid var(--line)}
+.verdict:last-child{border-right:0}
+.verdict.ok{border-left-color:var(--ok)}
+.verdict.bad{border-left-color:var(--bad);background:var(--bad-bg)}
+.verdict .lab{color:var(--muted);font-size:.9rem;line-height:1.3}
+.verdict .big{font-size:1.6rem;font-weight:600;line-height:1.2;margin-top:4px;white-space:nowrap}
+.verdict .st{font-size:.9rem;font-weight:600;margin-top:2px}
+.verdict.ok .st{color:var(--ok)} .verdict.bad .st{color:var(--bad)}
+
+.layout{max-width:1340px;margin:0 auto;padding:0 20px 56px;display:grid;grid-template-columns:minmax(300px,360px) minmax(0,1fr);gap:32px;align-items:start}
+.inputs{position:sticky;top:calc(env(safe-area-inset-top,0px) + 14px);max-height:calc(100vh - 28px);overflow:auto;background:var(--surface);border:1px solid var(--line);padding:18px 18px 8px}
+fieldset{border:0;margin:0 0 20px;padding:0;min-width:0}
+legend{font-weight:700;font-size:1.05rem;padding:0;margin-bottom:6px}
+.field{display:grid;grid-template-columns:minmax(0,1fr) 86px 50px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.field:last-child{border-bottom:0}
+.field label{font-size:.94rem;line-height:1.25}
+.field label .sym{color:var(--muted);font-style:italic;font-weight:500;margin-left:4px;white-space:nowrap}
+.field .unit{color:var(--muted);font-size:.88rem}
+.field input{width:100%;text-align:right;font-size:1.02rem;padding:.32rem .45rem;border:1px solid var(--line-strong);border-radius:3px;background:var(--paper);color:var(--ink)}
+.field input:focus{border-color:var(--water);outline:none;box-shadow:0 0 0 2px var(--water-fill)}
+.field input.err{border-color:var(--bad);background:var(--bad-bg)}
+.field.full{grid-template-columns:1fr}
+.field select{width:100%;font-size:1rem;padding:.4rem .45rem;border:1px solid var(--line-strong);border-radius:3px;background:var(--paper);color:var(--ink)}
+.hint{grid-column:1/-1;color:var(--muted);font-size:.84rem;line-height:1.35;margin-top:-2px}
+.hidden{display:none!important}
+
+main{min-width:0}
+main section{border-top:2px solid var(--ink);padding-top:14px;margin-bottom:40px}
+main h2{margin:0 0 4px;font-size:1.35rem;font-weight:700}
+main .lead{margin:0 0 16px;color:var(--muted);max-width:75ch}
+.figs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-bottom:18px}
+figure{margin:0;background:var(--surface);border:1px solid var(--line);padding:12px 12px 10px;min-width:0}
+figure.wide{grid-column:1/-1}
+figcaption{font-size:.88rem;color:var(--muted);margin-top:6px;line-height:1.35}
+figcaption b{color:var(--ink);font-weight:600}
+svg{display:block;width:100%;height:auto}
+.chartbox{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media (max-width:700px){.chartbox svg{min-width:640px}}
+.figtitle{font-weight:600;font-size:.98rem;margin:0 0 6px}
+
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{padding:7px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:600;color:var(--muted);font-size:.85rem;background:var(--paper)}
+td.sym{font-style:italic;font-weight:500;width:1%}
+td.val{text-align:right;font-family:"Barlow Semi Condensed","Barlow",Arial,sans-serif;font-variant-numeric:tabular-nums;font-weight:600;font-size:1.02rem}
+td.unit{color:var(--muted);width:1%}
+td.f{color:var(--muted);font-size:.9rem}
+tr.key td{background:var(--water-fill)}
+tr.key td.val{color:var(--ink)}
+tr.okrow td.val{color:var(--ok)} tr.badrow td.val{color:var(--bad)}
+tr:last-child td{border-bottom:0}
+
+.kpis{display:flex;flex-wrap:wrap;gap:10px 34px;margin:0 0 16px}
+.kpi .lab{color:var(--muted);font-size:.88rem}
+.kpi .big{font-size:1.9rem;font-weight:600;line-height:1.1}
+.kpi .big small{font-size:1rem;color:var(--muted);font-weight:500;margin-left:3px}
+
+.msg{max-width:1300px;margin:0 auto 18px;padding:10px 14px;border-left:4px solid var(--bad);background:var(--bad-bg)}
+.note{font-size:.88rem;color:var(--muted);max-width:80ch}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:.55rem 1rem;border-radius:4px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+
+/* svg styling */
+.grid{stroke:var(--line);stroke-width:1}
+.axis{stroke:var(--ink);stroke-width:1.4}
+.tick{fill:var(--muted);font-size:12px}
+.axlab{fill:var(--muted);font-size:12.5px;font-family:"Barlow",Arial,sans-serif}
+.curve{fill:none;stroke:var(--ink);stroke-width:1.4}
+.curve.top{stroke-width:2.6}
+.ovf{fill:var(--overflow)}
+.ovftxt{fill:var(--bad);font-size:14px;font-weight:700;font-family:"Barlow",Arial,sans-serif;opacity:.8}
+.slot{fill:var(--muted);font-size:12px;font-family:"Barlow Semi Condensed",Arial,sans-serif}
+.guide{stroke:var(--ink);stroke-width:1;stroke-dasharray:4 3;opacity:.65}
+.pt-ok{fill:var(--ok);stroke:var(--surface);stroke-width:2}
+.pt-bad{fill:var(--bad);stroke:var(--surface);stroke-width:2}
+.mark{fill:var(--surface);stroke:var(--ink);stroke-width:1.6}
+.ann{paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round;fill:var(--ink);font-size:12.5px;font-weight:600;font-family:"Barlow Semi Condensed",Arial,sans-serif}
+.ann-ok{fill:var(--ok)} .ann-bad{fill:var(--bad)}
+.line-ok{fill:none;stroke:var(--water);stroke-width:2.4}
+.line-bad{fill:none;stroke:var(--bad);stroke-width:2.4;stroke-dasharray:6 4}
+.ref{stroke:var(--ink);stroke-width:1.4;stroke-dasharray:7 4}
+.badzone{fill:var(--overflow)}
+.slab{fill:var(--concrete);stroke:var(--concrete-dark);stroke-width:1}
+.road{fill:none;stroke:var(--asphalt);stroke-width:3}
+.curb{fill:var(--concrete-dark);stroke:var(--asphalt);stroke-width:1.2}
+.waterp{fill:var(--water-fill);stroke:var(--water);stroke-width:1.4}
+.drain{fill:var(--surface);stroke:var(--asphalt);stroke-width:1.3}
+.grate{stroke:var(--asphalt);stroke-width:4}
+.dim{stroke:var(--muted);stroke-width:1}
+.dimtxt{paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round;fill:var(--ink);font-size:12.5px;font-family:"Barlow Semi Condensed",Arial,sans-serif;font-weight:600}
+.dimtxt.w{fill:var(--water)}
+.small{fill:var(--muted);font-size:11.5px;font-family:"Barlow",Arial,sans-serif}
+
+.animbar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-bottom:10px}
+.seg{display:flex;flex-wrap:wrap;border:1px solid var(--line-strong);border-radius:4px;overflow:hidden}
+.seg button{border:0;border-right:1px solid var(--line);background:var(--surface);color:var(--ink);padding:.42rem .75rem;cursor:pointer;font-weight:500}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.spd{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:.92rem}
+.spd select{font-size:.95rem;padding:.3rem .4rem;border:1px solid var(--line-strong);border-radius:3px;background:var(--paper);color:var(--ink)}
+.canvaswrap{position:relative;width:100%}
+#animcv{display:block;width:100%;background:var(--surface)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:.88rem;color:var(--muted);margin-top:8px}
+.legend > span{display:inline-flex;align-items:center;gap:7px}
+.sw{display:inline-block;width:12px;height:12px;border-radius:50%}
+.sw.cap{background:var(--water)} .sw.pass{background:var(--pass)} .sw.zone{border-radius:2px;background:var(--water-fill);outline:1px dashed var(--water)}
+.steptext{margin:12px 0 4px;max-width:80ch;min-height:3em;line-height:1.5}
+.steptext p{margin:0 0 .6em}
+.steptext .demo{padding:8px 12px;border-left:4px solid var(--line-strong);background:var(--paper)}
+.steptext .demo.bad{border-left-color:var(--bad);background:var(--bad-bg)}
+.remedy{margin:0 0 .4em;padding-left:1.2em}
+.remedy li{margin-bottom:.4em}
+.gauge{margin:4px 0 12px;max-width:560px}
+.gbar{position:relative;height:14px;background:var(--paper);border:1px solid var(--line-strong);border-radius:2px}
+.gfill{position:absolute;left:0;top:0;bottom:0;background:var(--bad);opacity:.75}
+.gmark{position:absolute;top:-5px;bottom:-5px;width:3px;margin-left:-1.5px;background:var(--ink)}
+.glab{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.88rem;color:var(--muted);margin-top:6px;font-family:"Barlow Semi Condensed","Barlow",Arial,sans-serif}
+.glab .b{color:var(--bad);font-weight:600}
+.seg button.alert{color:var(--bad);font-weight:700}
+.seg button.alert[aria-pressed="true"]{background:var(--bad);color:#fff}
+.sw.over{background:var(--bad)}
+.animstats{display:flex;flex-wrap:wrap;gap:10px 34px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.animstats .lab{color:var(--muted);font-size:.86rem}
+.animstats .big{font-size:1.45rem;font-weight:600;line-height:1.15}
+.animstats .big small{font-size:.92rem;color:var(--muted);font-weight:500;margin-left:3px}
+@media (max-width:1100px){.verdicts{grid-template-columns:repeat(2,minmax(0,1fr))}.verdict:nth-child(2){border-right:0}.verdict:nth-child(-n+2){border-bottom:1px solid var(--line)}}
+@media (max-width:920px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+  .inputs{position:static;max-height:none}
+  .figs{grid-template-columns:1fr}
+}
+@media (max-width:520px){.verdicts{grid-template-columns:1fr}.verdict{border-right:0;border-bottom:1px solid var(--line)}.verdict .big{font-size:1.4rem}}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>Odvodnenie mosta</h1>
+    <p>Hltnosť mostného odvodňovača, vzdialenosť odvodňovačov a posúdenie zberného potrubia. Postup zodpovedá výpočtovému listu 205-00, odčítanie z grafu hltnosti robí aplikácia sama.</p>
+  </div>
+  <div class="actions">
+    <button class="btn" id="reset" type="button">Obnoviť príklad 205-00</button>
+    <button class="btn primary" id="copy" type="button">Kopírovať protokol</button>
+  </div>
+</header>
+
+<div class="wrapv"><div class="verdicts" id="verdicts" aria-live="polite"></div></div>
+<div class="wrapv"><div class="msg hidden" id="msg" role="alert"></div></div>
+
+<div class="layout">
+  <aside class="inputs" id="inputs" aria-label="Vstupné údaje"></aside>
+  <main>
+    <section id="s1">
+      <h2>Hltnosť odvodňovača</h2>
+      <p class="lead">Prietok v trojuholníkovom rigole pri obrubníku a množstvo vody, ktoré zachytí jeden odvodňovač. Bod v grafe musí ležať pod hraničnou krivkou výrobcu.</p>
+      <div class="figs">
+        <figure class="wide">
+          <p class="figtitle">Priečny rez rigolom</p>
+          <div class="chartbox" id="cross"></div>
+          <figcaption id="crosscap"></figcaption>
+        </figure>
+        <figure class="wide">
+          <p class="figtitle" id="captitle">Graf hltnosti</p>
+          <div class="chartbox" id="capchart"></div>
+          <figcaption id="capcap"></figcaption>
+        </figure>
+      </div>
+      <div class="tablewrap"><table id="t1"></table></div>
+    </section>
+
+    <section id="s1b">
+      <h2>Ako odvodňovač zachytáva vodu</h2>
+      <p class="lead">Pôdorys rigolu pri obrubníku podľa aktuálneho výpočtu, v mierke a v reálnom čase. Každá kvapka predstavuje časť prietoku, ich hustota zodpovedá hĺbke vody.</p>
+      <figure class="wide animfig">
+        <div class="animbar">
+          <button class="btn" id="animplay" type="button">Pozastaviť</button>
+          <div class="seg" id="animsteps" role="group" aria-label="Krok vysvetlenia">
+            <button type="button" data-step="all" aria-pressed="true">Celý proces</button>
+            <button type="button" data-step="1" aria-pressed="false">1 Rozliatie</button>
+            <button type="button" data-step="2" aria-pressed="false">2 Bočný nátok</button>
+            <button type="button" data-step="3" aria-pressed="false">3 Zachytenie</button>
+            <button type="button" data-step="4" aria-pressed="false">4 Obtok</button>
+            <button type="button" data-step="5" aria-pressed="false" id="step5">5 Keď nevyhovuje</button>
+          </div>
+          <label class="spd">Rýchlosť
+            <select id="animspeed"><option value="0.25">0,25×</option><option value="0.5">0,5×</option><option value="1" selected>1× reálny čas</option><option value="2">2×</option></select>
+          </label>
+        </div>
+        <div class="canvaswrap"><canvas id="animcv" role="img" aria-label="Animácia toku vody v rigole a jej zachytenia odvodňovačom"></canvas></div>
+        <div class="legend"><span><i class="sw cap"></i><span>voda, ktorú odvodňovač zachytí (H<sub>od</sub>)</span></span><span><i class="sw pass"></i><span>voda, ktorá odvodňovač obtečie (Q − H<sub>od</sub>)</span></span><span><i class="sw zone"></i><span>spolupôsobiaca šírka a<sub>1</sub></span></span><span><i class="sw over"></i><span>voda, ktorá pretečie ponad preťaženú mriežku</span></span></div>
+        <div class="steptext" id="steptext"></div>
+        <div class="animstats" id="animstats"></div>
+      </figure>
+    </section>
+
+    <section id="s2">
+      <h2>Vzdialenosť odvodňovačov</h2>
+      <p class="lead">Z hltnosti jedného odvodňovača a prítoku z odvodňovanej plochy mosta.</p>
+      <div class="kpis" id="kpi2"></div>
+      <div class="figs">
+        <figure class="wide">
+          <p class="figtitle">Vzdialenosť odvodňovačov podľa pozdĺžneho sklonu</p>
+          <div class="chartbox" id="senschart"></div>
+          <figcaption id="senscap"></figcaption>
+        </figure>
+      </div>
+      <div class="tablewrap"><table id="t2"></table></div>
+    </section>
+
+    <section id="s3">
+      <h2>Zberné potrubie</h2>
+      <p class="lead">Kapacita potrubia pri zvolenom plnení (Manning–Chézy) porovnaná s celkovým prítokom z mosta Q<sub>M</sub>.</p>
+      <div class="figs">
+        <figure class="wide">
+          <p class="figtitle">Prietok potrubím podľa plnenia</p>
+          <div class="chartbox" id="pipechart"></div>
+          <figcaption id="pipecap"></figcaption>
+        </figure>
+      </div>
+      <div class="tablewrap"><table id="t3"></table></div>
+    </section>
+    <p class="note">Grafy hltnosti pre odvodňovače 300 × 300, 500 × 300 a 500 × 500 sú zdigitalizované z podkladov vo výpočtovom liste, presnosť odčítania je približne ±0,5 mm. Výsledky slúžia ako podklad pre návrh, za posúdenie zodpovedá projektant.</p>
+  </main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const CURVES = {"1":[[[0,24.0],[0.025,23.3],[0.05,22.5],[0.075,21.5],[0.1,20.7],[0.125,19.7],[0.15,18.9],[0.175,18.0],[0.2,17.1],[0.225,16.2],[0.25,15.3],[0.275,14.4],[0.3,13.5],[0.325,12.6],[0.35,11.8],[0.375,11.0],[0.4,10.3],[0.425,9.6],[0.45,8.9],[0.475,8.3],[0.5,7.7],[0.525,7.1],[0.55,6.6],[0.575,6.2],[0.6,5.8],[0.625,5.4],[0.65,5.1],[0.675,4.8],[0.7,4.5],[0.725,4.3],[0.75,4.1],[0.775,3.9],[0.8,3.8],[0.825,3.6],[0.85,3.5],[0.875,3.5],[0.9,3.4],[0.925,3.4],[0.95,3.4],[0.975,3.4],[1.0,3.4]],[[0,30.4],[0.025,29.7],[0.05,28.8],[0.075,27.9],[0.1,27.0],[0.125,26.1],[0.15,25.2],[0.175,24.3],[0.2,23.4],[0.225,22.5],[0.25,21.5],[0.275,20.7],[0.3,19.7],[0.325,18.9],[0.35,17.9],[0.375,17.0],[0.4,16.1],[0.425,15.2],[0.45,14.3],[0.475,13.5],[0.5,12.8],[0.525,12.0],[0.55,11.3],[0.575,10.7],[0.6,10.1],[0.625,9.5],[0.65,8.9],[0.675,8.4],[0.7,8.0],[0.725,7.5],[0.75,7.1],[0.775,6.7],[0.8,6.4],[0.825,6.1],[0.85,5.9],[0.875,5.6],[0.9,5.4],[0.925,5.2],[0.95,5.1],[0.975,5.0],[1.0,4.9]],[[0,36.8],[0.025,36.1],[0.05,35.2],[0.075,34.3],[0.1,33.4],[0.125,32.5],[0.15,31.6],[0.175,30.6],[0.2,29.8],[0.225,28.8],[0.25,27.9],[0.275,27.0],[0.3,26.1],[0.325,25.2],[0.35,24.3],[0.375,23.4],[0.4,22.5],[0.425,21.5],[0.45,20.6],[0.475,19.7],[0.5,18.7],[0.525,17.8],[0.55,16.9],[0.575,16.1],[0.6,15.2],[0.625,14.5],[0.65,13.7],[0.675,13.0],[0.7,12.3],[0.725,11.6],[0.75,11.0],[0.775,10.4],[0.8,9.8],[0.825,9.3],[0.85,8.8],[0.875,8.4],[0.9,8.0],[0.925,7.6],[0.95,7.3],[0.975,7.0],[1.0,6.8]],[[0,42.7],[0.025,42.1],[0.05,41.1],[0.075,40.3],[0.1,39.3],[0.125,38.4],[0.15,37.5],[0.175,36.6],[0.2,35.7],[0.225,34.8],[0.25,33.9],[0.275,32.9],[0.3,32.1],[0.325,31.1],[0.35,30.3],[0.375,29.3],[0.4,28.5],[0.425,27.5],[0.45,26.6],[0.475,25.7],[0.5,24.8],[0.525,23.9],[0.55,23.0],[0.575,22.0],[0.6,21.1],[0.625,20.1],[0.65,19.3],[0.675,18.4],[0.7,17.5],[0.725,16.7],[0.75,15.9],[0.775,15.1],[0.8,14.3],[0.825,13.5],[0.85,12.8],[0.875,12.1],[0.9,11.4],[0.925,10.8],[0.95,10.2],[0.975,9.6],[1.0,9.1]],[[0.079,45.7],[0.1,44.9],[0.125,44.0],[0.15,43.1],[0.175,42.1],[0.2,41.3],[0.225,40.3],[0.25,39.5],[0.275,38.5],[0.3,37.7],[0.325,36.7],[0.35,35.8],[0.375,34.9],[0.4,34.0],[0.425,33.1],[0.45,32.2],[0.475,31.3],[0.5,30.3],[0.525,29.5],[0.55,28.5],[0.575,27.7],[0.6,26.7],[0.625,25.8],[0.65,24.9],[0.675,24.0],[0.7,23.1],[0.725,22.2],[0.75,21.3],[0.775,20.4],[0.8,19.5],[0.825,18.6],[0.85,17.7],[0.875,16.7],[0.9,15.9],[0.925,14.9],[0.95,14.0],[0.975,13.1],[1.0,12.3]]],"2":[[[0,36.7],[0.025,36.3],[0.05,35.4],[0.075,34.7],[0.1,33.9],[0.125,33.1],[0.15,32.3],[0.175,31.5],[0.2,30.7],[0.225,29.9],[0.25,29.1],[0.275,28.3],[0.3,27.5],[0.325,26.8],[0.35,25.9],[0.375,25.1],[0.4,24.3],[0.425,23.6],[0.45,22.7],[0.475,21.9],[0.5,21.2],[0.525,20.4],[0.55,19.5],[0.575,18.8],[0.6,18.0],[0.625,17.2],[0.65,16.4],[0.675,15.6],[0.7,14.9],[0.725,14.3],[0.75,13.7],[0.775,13.2],[0.8,12.7],[0.825,12.2],[0.85,11.8],[0.875,11.4],[0.9,11.0],[0.925,10.6],[0.95,10.3],[0.975,9.9],[1.0,9.6],[1.025,9.3],[1.05,9.0],[1.075,8.7],[1.1,8.5],[1.125,8.2],[1.15,8.0],[1.175,7.7],[1.2,7.5],[1.225,7.3],[1.25,7.1],[1.275,7.0],[1.3,6.8],[1.325,6.6],[1.35,6.5],[1.375,6.3],[1.4,6.2],[1.425,6.1],[1.45,6.0],[1.475,5.9],[1.5,5.9]],[[0,46.5],[0.025,46.0],[0.05,45.3],[0.075,44.4],[0.1,43.6],[0.125,42.9],[0.15,42.1],[0.175,41.2],[0.2,40.4],[0.225,39.7],[0.25,38.9],[0.275,38.0],[0.3,37.3],[0.325,36.5],[0.35,35.7],[0.375,34.9],[0.4,34.1],[0.425,33.3],[0.45,32.5],[0.475,31.7],[0.5,30.9],[0.525,30.1],[0.55,29.4],[0.575,28.5],[0.6,27.7],[0.625,27.0],[0.65,26.2],[0.675,25.3],[0.7,24.6],[0.725,23.8],[0.75,23.0],[0.775,22.2],[0.8,21.4],[0.825,20.6],[0.85,19.9],[0.875,19.2],[0.9,18.5],[0.925,17.8],[0.95,17.2],[0.975,16.6],[1.0,16.0],[1.025,15.4],[1.05,14.9],[1.075,14.4],[1.1,13.9],[1.125,13.4],[1.15,12.9],[1.175,12.5],[1.2,12.1],[1.225,11.7],[1.25,11.3],[1.275,10.9],[1.3,10.6],[1.325,10.2],[1.35,9.9],[1.375,9.7],[1.4,9.4],[1.425,9.1],[1.45,8.9],[1.475,8.7],[1.5,8.5]],[[0,55.0],[0.025,54.7],[0.05,53.8],[0.075,53.0],[0.1,52.3],[0.125,51.5],[0.15,50.6],[0.175,49.8],[0.2,49.1],[0.225,48.3],[0.25,47.4],[0.275,46.7],[0.3,45.9],[0.325,45.1],[0.35,44.3],[0.375,43.5],[0.4,42.7],[0.425,41.9],[0.45,41.1],[0.475,40.3],[0.5,39.5],[0.525,38.8],[0.55,37.9],[0.575,37.1],[0.6,36.4],[0.625,35.6],[0.65,34.7],[0.675,34.0],[0.7,33.2],[0.725,32.4],[0.75,31.6],[0.775,30.8],[0.8,30.0],[0.825,29.2],[0.85,28.5],[0.875,27.6],[0.9,26.8],[0.925,26.1],[0.95,25.3],[0.975,24.5],[1.0,23.8],[1.025,23.1],[1.05,22.4],[1.075,21.7],[1.1,21.0],[1.125,20.4],[1.15,19.7],[1.175,19.1],[1.2,18.4],[1.225,17.8],[1.25,17.2],[1.275,16.6],[1.3,16.0],[1.325,15.4],[1.35,14.8],[1.375,14.3],[1.4,13.7],[1.425,13.2],[1.45,12.7],[1.475,12.2],[1.5,11.8]],[[0.125,59.7],[0.15,58.9],[0.175,58.1],[0.2,57.3],[0.225,56.5],[0.25,55.8],[0.275,54.9],[0.3,54.1],[0.325,53.3],[0.35,52.6],[0.375,51.7],[0.4,50.9],[0.425,50.2],[0.45,49.4],[0.475,48.5],[0.5,47.8],[0.525,47.0],[0.55,46.2],[0.575,45.4],[0.6,44.6],[0.625,43.8],[0.65,43.0],[0.675,42.3],[0.7,41.4],[0.725,40.6],[0.75,39.9],[0.775,39.1],[0.8,38.2],[0.825,37.5],[0.85,36.7],[0.875,35.9],[0.9,35.1],[0.925,34.3],[0.95,33.5],[0.975,32.7],[1.0,31.9],[1.025,31.1],[1.05,30.3],[1.075,29.6],[1.1,28.7],[1.125,27.9],[1.15,27.2],[1.175,26.4],[1.2,25.5],[1.225,24.8],[1.25,24.0],[1.275,23.2],[1.3,22.3],[1.325,21.6],[1.35,20.8],[1.375,20.0],[1.4,19.3],[1.425,18.4],[1.45,17.6],[1.475,16.8],[1.5,16.2]]],"3":[[[0,40.4],[0.025,39.8],[0.05,38.8],[0.075,37.8],[0.1,36.9],[0.125,35.9],[0.15,34.8],[0.175,33.9],[0.2,32.9],[0.225,31.9],[0.25,30.9],[0.275,29.9],[0.3,28.9],[0.325,27.9],[0.35,27.0],[0.375,26.0],[0.4,24.9],[0.425,24.0],[0.45,23.0],[0.475,22.0],[0.5,21.0],[0.525,20.1],[0.55,19.0],[0.575,18.1],[0.6,17.2],[0.625,16.3],[0.65,15.5],[0.675,14.8],[0.7,14.0],[0.725,13.4],[0.75,12.7],[0.775,12.2],[0.8,11.6],[0.825,11.0],[0.85,10.6],[0.875,10.1],[0.9,9.7],[0.925,9.3],[0.95,9.0],[0.975,8.6],[1.0,8.3],[1.025,8.0],[1.05,7.8],[1.075,7.5],[1.1,7.3],[1.125,7.1],[1.15,6.9],[1.175,6.7],[1.2,6.6],[1.225,6.4],[1.25,6.3],[1.275,6.2],[1.3,6.1],[1.325,6.0],[1.35,6.0],[1.375,5.9],[1.4,5.9],[1.425,5.9],[1.45,5.9],[1.475,5.8],[1.5,5.7]],[[0,50.4],[0.025,49.8],[0.05,48.8],[0.075,47.9],[0.1,46.8],[0.125,45.8],[0.15,44.9],[0.175,43.9],[0.2,42.9],[0.225,41.9],[0.25,40.9],[0.275,39.9],[0.3,38.9],[0.325,38.0],[0.35,37.0],[0.375,35.9],[0.4,35.0],[0.425,34.0],[0.45,33.0],[0.475,32.1],[0.5,31.1],[0.525,30.0],[0.55,29.0],[0.575,28.1],[0.6,27.1],[0.625,26.0],[0.65,25.1],[0.675,24.1],[0.7,23.2],[0.725,22.2],[0.75,21.4],[0.775,20.6],[0.8,19.8],[0.825,19.0],[0.85,18.3],[0.875,17.6],[0.9,17.0],[0.925,16.3],[0.95,15.7],[0.975,15.1],[1.0,14.6],[1.025,14.1],[1.05,13.6],[1.075,13.1],[1.1,12.6],[1.125,12.2],[1.15,11.8],[1.175,11.4],[1.2,11.0],[1.225,10.7],[1.25,10.4],[1.275,10.1],[1.3,9.8],[1.325,9.5],[1.35,9.3],[1.375,9.1],[1.4,8.9],[1.425,8.8],[1.45,8.7],[1.475,8.6],[1.5,8.6]],[[0,60.9],[0.025,60.3],[0.05,59.3],[0.075,58.4],[0.1,57.4],[0.125,56.3],[0.15,55.4],[0.175,54.4],[0.2,53.4],[0.225,52.5],[0.25,51.5],[0.275,50.4],[0.3,49.5],[0.325,48.5],[0.35,47.5],[0.375,46.5],[0.4,45.6],[0.425,44.5],[0.45,43.5],[0.475,42.6],[0.5,41.6],[0.525,40.5],[0.55,39.6],[0.575,38.6],[0.6,37.6],[0.625,36.6],[0.65,35.7],[0.675,34.6],[0.7,33.6],[0.725,32.7],[0.75,31.7],[0.775,30.7],[0.8,29.7],[0.825,28.7],[0.85,27.8],[0.875,26.8],[0.9,25.9],[0.925,25.0],[0.95,24.2],[0.975,23.3],[1.0,22.5],[1.025,21.7],[1.05,20.9],[1.075,20.2],[1.1,19.5],[1.125,18.8],[1.15,18.1],[1.175,17.4],[1.2,16.8],[1.225,16.2],[1.25,15.6],[1.275,15.1],[1.3,14.6],[1.325,14.1],[1.35,13.6],[1.375,13.2],[1.4,12.8],[1.425,12.4],[1.45,12.1],[1.475,11.8],[1.5,11.6]],[[0,70.5],[0.025,69.8],[0.05,68.8],[0.075,67.9],[0.1,66.9],[0.125,65.9],[0.15,65.0],[0.175,63.9],[0.2,62.9],[0.225,61.9],[0.25,61.0],[0.275,60.0],[0.3,58.9],[0.325,58.0],[0.35,57.0],[0.375,56.0],[0.4,55.1],[0.425,54.1],[0.45,53.0],[0.475,52.0],[0.5,51.1],[0.525,50.1],[0.55,49.0],[0.575,48.2],[0.6,47.1],[0.625,46.1],[0.65,45.2],[0.675,44.2],[0.7,43.1],[0.725,42.2],[0.75,41.2],[0.775,40.2],[0.8,39.2],[0.825,38.3],[0.85,37.2],[0.875,36.2],[0.9,35.3],[0.925,34.3],[0.95,33.3],[0.975,32.4],[1.0,31.4],[1.025,30.5],[1.05,29.6],[1.075,28.7],[1.1,27.8],[1.125,26.9],[1.15,26.1],[1.175,25.2],[1.2,24.4],[1.225,23.6],[1.25,22.8],[1.275,22.0],[1.3,21.2],[1.325,20.4],[1.35,19.7],[1.375,18.9],[1.4,18.2],[1.425,17.5],[1.45,16.8],[1.475,16.2],[1.5,15.7]],[[0.125,75.0],[0.15,73.9],[0.175,73.0],[0.2,72.0],[0.225,71.0],[0.25,70.0],[0.275,69.1],[0.3,68.0],[0.325,67.0],[0.35,66.1],[0.375,65.1],[0.4,64.1],[0.425,63.2],[0.45,62.1],[0.475,61.1],[0.5,60.1],[0.525,59.2],[0.55,58.2],[0.575,57.1],[0.6,56.2],[0.625,55.2],[0.65,54.2],[0.675,53.3],[0.7,52.2],[0.725,51.2],[0.75,50.2],[0.775,49.3],[0.8,48.3],[0.825,47.2],[0.85,46.3],[0.875,45.3],[0.9,44.3],[0.925,43.4],[0.95,42.4],[0.975,41.3],[1.0,40.3],[1.025,39.4],[1.05,38.4],[1.075,37.3],[1.1,36.5],[1.125,35.4],[1.15,34.4],[1.175,33.5],[1.2,32.5],[1.225,31.4],[1.25,30.5],[1.275,29.5],[1.3,28.5],[1.325,27.5],[1.35,26.6],[1.375,25.5],[1.4,24.5],[1.425,23.6],[1.45,22.6],[1.475,21.6],[1.5,20.7]]]};
+const GRATES = {
+  g300:   {label:"Odvodňovač 300 × 300", info:"Mriežka 300 × 300 mm, rám 330 × 330 mm.", a:"0,3", len:0.30, vlim:1.0, slots:["1","2","3","4","5"], curves:CURVES["1"]},
+  g500x300:{label:"Odvodňovač 500 × 300", info:"Mriežka 300 × 500 mm (šírka × dĺžka), rám 330 × 530 mm.", a:"0,3", len:0.50, vlim:1.5, slots:["1–2","3–4","5–6","7–8"], curves:CURVES["2"]},
+  g500:   {label:"Odvodňovač 500 × 500", info:"Mriežka 455 × 430 mm (šírka × dĺžka), rám 485 × 460 mm.", a:"0,455", len:0.43, vlim:1.5, slots:["1","2","3","4","5"], curves:CURVES["3"]},
+  custom: {label:"Iný odvodňovač (h\u2098\u2090\u2093 zadám ručne)", info:"Bez grafu. Hodnotu h<sub>max</sub> odčítaj z podkladov výrobcu pre vypočítanú rýchlosť v′.", a:null, vlim:null, slots:null, curves:null}
+};
+const DEFAULTS = {typ:"g300", ppr:"2,5", ppd:"2,9", B:"1", a:"0,3", bobr:"0,025", n:"0,015", hmaxManual:"20",
+  l:"156,4", sw:"18,4", lines:"1", q:"0,02", phi:"0,9", s:"2",
+  dpot:"0,25", ipot:"2,9", npot:"0,014", fill:"66,65"};
+const GROUPS = [
+  {title:"Rigol a odvodňovač", fields:[
+    {id:"typ", type:"select"},
+    {id:"ppr", name:"Priečny sklon", sym:"P<sub>pr</sub>", unit:"%"},
+    {id:"ppd", name:"Pozdĺžny sklon", sym:"P<sub>pd</sub>", unit:"%"},
+    {id:"B", name:"Šírka rozliatia", sym:"B", unit:"m"},
+    {id:"a", name:"Šírka odvodňovača", sym:"a", unit:"m"},
+    {id:"bobr", name:"Vzdialenosť od obrubníka", sym:"b<sub>obr</sub>", unit:"m"},
+    {id:"n", name:"Súčiniteľ drsnosti povrchu", sym:"n", unit:""},
+    {id:"hmaxManual", name:"Max. výška vody podľa výrobcu", sym:"h<sub>max</sub>", unit:"mm", customOnly:true}
+  ]},
+  {title:"Odvodňovaná plocha", fields:[
+    {id:"l", name:"Dĺžka odvodňovanej plochy", sym:"l", unit:"m"},
+    {id:"sw", name:"Šírka odvodňovanej plochy", sym:"š", unit:"m"},
+    {id:"lines", name:"Počet línií odvodňovačov", sym:"n<sub>l</sub>", unit:"", int:true, hint:"Šírka š sa rozdelí rovnomerne medzi línie. Hodnota 1 zodpovedá výpočtovému listu."},
+    {id:"q", name:"Intenzita dažďa (15 min)", sym:"q", unit:"l/s·m²"},
+    {id:"phi", name:"Súčiniteľ odtoku", sym:"φ", unit:""},
+    {id:"s", name:"Stupeň bezpečnosti", sym:"s", unit:""}
+  ]},
+  {title:"Zberné potrubie", fields:[
+    {id:"dpot", name:"Vnútorný priemer", sym:"d<sub>pot</sub>", unit:"m"},
+    {id:"ipot", name:"Sklon potrubia", sym:"i<sub>pot</sub>", unit:"%"},
+    {id:"npot", name:"Drsnosť potrubia", sym:"n", unit:""},
+    {id:"fill", name:"Plnenie potrubia", sym:"h/d", unit:"%", hint:"66,65 % zodpovedá stredovému uhlu 218,9° z výpočtového listu."}
+  ]}
+];
+const STORE_KEY = "odvodnenie-mosta-v1";
+let state = {...DEFAULTS};
+try { const s = localStorage.getItem(STORE_KEY); if (s) state = {...DEFAULTS, ...JSON.parse(s)}; } catch(e) {}
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const parse = s => { if (s == null) return NaN; const t = String(s).trim().replace(/\s/g,"").replace(",", "."); return t === "" ? NaN : Number(t); };
+const nf = (x, d) => Number.isFinite(x) ? x.toLocaleString("sk-SK", {minimumFractionDigits:d, maximumFractionDigits:d}) : "–";
+const plain = html => html.replace(/<sub>(.*?)<\/sub>/g, "$1").replace(/<sup>(.*?)<\/sup>/g, "^$1").replace(/<[^>]+>/g, "");
+function interp(pts, x){
+  if (x <= pts[0][0]) return pts[0][1];
+  const last = pts[pts.length-1];
+  if (x >= last[0]) return last[1];
+  for (let i = 1; i < pts.length; i++){
+    if (x <= pts[i][0]){ const [x0,y0] = pts[i-1], [x1,y1] = pts[i]; return y0 + (y1-y0)*(x-x0)/(x1-x0); }
+  }
+  return last[1];
+}
+function niceStep(range, n){ const raw = range/n, mag = Math.pow(10, Math.floor(Math.log10(raw))), f = raw/mag; return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*mag; }
+function niceMax(x, n){ const st = niceStep(x, n); return {max: Math.ceil(x/st)*st, step: st}; }
+function range(a, b, st){ const out=[]; for (let v=a; v<=b+st*1e-6; v+=st) out.push(+v.toFixed(10)); return out; }
+
+/* ---------- inputs ---------- */
+function buildInputs(){
+  let html = "";
+  GROUPS.forEach(g => {
+    html += `<fieldset><legend>${g.title}</legend>`;
+    g.fields.forEach(f => {
+      if (f.type === "select"){
+        html += `<div class="field full"><label for="f-typ">Typ odvodňovača</label><select id="f-typ">${Object.entries(GRATES).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join("")}</select><div class="hint" id="typinfo"></div></div>`;
+      } else {
+        html += `<div class="field${f.customOnly?" customonly":""}"><label for="f-${f.id}">${f.name}<span class="sym">${f.sym}</span></label><input id="f-${f.id}" inputmode="decimal" autocomplete="off" spellcheck="false"><span class="unit">${f.unit}</span>${f.hint?`<div class="hint">${f.hint}</div>`:""}</div>`;
+      }
+    });
+    html += `</fieldset>`;
+  });
+  $("inputs").innerHTML = html;
+  fillInputs();
+  $("f-typ").addEventListener("change", e => {
+    state.typ = e.target.value;
+    const g = GRATES[state.typ];
+    if (g.a){ state.a = g.a; $("f-a").value = g.a; }
+    update();
+  });
+  GROUPS.flatMap(g=>g.fields).filter(f=>f.type!=="select").forEach(f => {
+    $("f-"+f.id).addEventListener("input", e => { state[f.id] = e.target.value; update(); });
+  });
+}
+function fillInputs(){
+  $("f-typ").value = state.typ;
+  GROUPS.flatMap(g=>g.fields).filter(f=>f.type!=="select").forEach(f => { $("f-"+f.id).value = state[f.id]; });
+}
+
+/* ---------- calculation ---------- */
+function readParams(){
+  const p = {typ: state.typ}; const bad = [];
+  GROUPS.flatMap(g=>g.fields).filter(f=>f.type!=="select").forEach(f => {
+    if (f.customOnly && state.typ !== "custom") { p[f.id] = parse(state[f.id]); return; }
+    const v = parse(state[f.id]);
+    p[f.id] = v;
+    let ok = Number.isFinite(v) && v > 0;
+    if (f.int) ok = ok && Number.isInteger(v);
+    if (f.id === "fill") ok = ok && v <= 100;
+    if (!ok) bad.push(f.id);
+  });
+  return {p, bad};
+}
+function calc(p){
+  const r = {};
+  const ppr = p.ppr/100, ppd = p.ppd/100;
+  r.h = p.B*ppr; r.A = 0.5*p.B*r.h; r.O = p.B + r.h; r.R = r.A/r.O;
+  r.C = Math.pow(r.R, 1/6)/p.n;
+  r.v = r.C*Math.sqrt(r.R*ppd);
+  r.Q = r.A*r.v*1000;
+  r.vs = r.v*1.15;
+  r.h1 = (p.B - p.bobr - p.a/2)*ppr;
+  r.k = 5/r.v; r.kh1 = r.k*r.h1;
+  r.a1 = r.kh1 + p.a + Math.min(p.bobr, r.kh1);
+  r.hp = (p.B - r.a1/2)*ppr;
+  r.A1 = r.a1*r.hp;
+  r.Hod = r.A1*r.v*1000;
+  const g = GRATES[p.typ];
+  if (g.curves){
+    r.vlim = g.vlim;
+    const top = g.curves[g.curves.length-1];
+    r.hmax = interp(top, Math.min(r.vs, g.vlim));
+    r.slot = null;
+    for (let i = 0; i < g.curves.length; i++){ if (r.h1*1000 <= interp(g.curves[i], Math.min(r.vs, g.vlim)) + 1e-9){ r.slot = g.slots[i]; break; } }
+  } else { r.vlim = null; r.hmax = p.hmaxManual; r.slot = null; }
+  r.okH = r.h1*1000 <= r.hmax + 1e-9;
+  r.okV = r.vlim == null || r.vs <= r.vlim + 1e-9;
+  r.Fm = p.l*p.sw; r.QM = r.Fm*p.q*p.phi;
+  r.swl = p.sw/p.lines;
+  r.Lodv = r.Hod/(p.q*r.swl*p.phi*p.s);
+  r.nodv = Math.ceil(p.l/r.Lodv - 1e-9);
+  r.ntot = r.nodv*p.lines;
+  r.Lreal = p.l/r.nodv;
+  Object.assign(r, pipe(p, p.fill));
+  r.okP = r.Qp >= r.QM;
+  return r;
+}
+function pipe(p, fillPct){
+  const th = 2*Math.acos(1 - 2*fillPct/100);
+  const S = p.dpot*p.dpot/8*(th - Math.sin(th));
+  const Op = p.dpot/2*th, Rp = S/Op;
+  const cp = (1/p.npot)*Math.pow(Rp, 1/6);
+  const vp = cp*Math.sqrt(Rp*p.ipot/100);
+  return {theta: th*180/Math.PI, Sp: S, Op, Rp, cp, vp, Qp: S*vp*1000};
+}
+
+/* ---------- svg helpers ---------- */
+function frame(o){
+  const {W,H,ml,mr,mt,mb,x0,x1,y0,y1} = o;
+  const sx = v => ml + (v-x0)/(x1-x0)*(W-ml-mr);
+  const sy = v => H - mb - (v-y0)/(y1-y0)*(H-mt-mb);
+  let s = "";
+  o.yt.forEach(t => { s += `<line class="grid" x1="${ml}" x2="${W-mr}" y1="${sy(t).toFixed(1)}" y2="${sy(t).toFixed(1)}"/><text class="tick" x="${ml-8}" y="${(sy(t)+4).toFixed(1)}" text-anchor="end">${o.fy(t)}</text>`; });
+  o.xt.forEach(t => { s += `<line class="grid" y1="${mt}" y2="${H-mb}" x1="${sx(t).toFixed(1)}" x2="${sx(t).toFixed(1)}"/><text class="tick" y="${H-mb+18}" x="${sx(t).toFixed(1)}" text-anchor="middle">${o.fx(t)}</text>`; });
+  s += `<line class="axis" x1="${ml}" x2="${W-mr}" y1="${H-mb}" y2="${H-mb}"/><line class="axis" x1="${ml}" x2="${ml}" y1="${mt}" y2="${H-mb}"/>`;
+  s += `<text class="axlab" x="${ml+(W-ml-mr)/2}" y="${H-8}" text-anchor="middle">${o.xl}</text>`;
+  s += `<text class="axlab" transform="translate(15 ${mt+(H-mt-mb)/2}) rotate(-90)" text-anchor="middle">${o.yl}</text>`;
+  return {sx, sy, s};
+}
+const sb = (b, s, rest) => `${b}<tspan dy="3" font-size="0.78em">${s}</tspan><tspan dy="-3">${rest}</tspan>`;
+const pathOf = (pts, sx, sy) => pts.map((p,i)=>(i?"L":"M")+sx(p[0]).toFixed(1)+" "+sy(p[1]).toFixed(1)).join("");
+
+/* ---------- animation ---------- */
+const anim = {p:null, r:null, parts:[], step:"all", speed:1, playing:true, visible:true, last:0, spawnAcc:0, cap:0, pass:0, statT:0, W:0, H:0, dpr:1, key:""};
+const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+if (reduceMotion) anim.playing = false;
+const cv = $("animcv"), ctx = cv.getContext("2d");
+function cssv(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+function animResize(){
+  const w = cv.parentElement.clientWidth || 600;
+  const h = Math.round(Math.min(380, Math.max(250, w*0.44)));
+  anim.dpr = window.devicePixelRatio || 1;
+  cv.width = Math.round(w*anim.dpr); cv.height = Math.round(h*anim.dpr); cv.style.height = h + "px";
+  anim.W = w; anim.H = h; anim.parts = []; anim.key = "";
+}
+function animGeo(){
+  const {p, r, W, H} = anim;
+  const top = 36, bottom = 50;
+  const s = (H - top - bottom)/(p.B*1.16);
+  const len = GRATES[p.typ].len || p.a;
+  const gx0 = Math.round(W*0.56), gx1 = gx0 + len*s;
+  const dL = Math.max(0, p.bobr - Math.min(p.bobr, r.kh1)), dR = Math.min(p.B, p.bobr + p.a + r.kh1);
+  const approach = Math.max(0.25, r.kh1*2.2)*s;
+  return {top, s, len, gx0, gx1, dL, dR, approach, Y: y => top + y*s};
+}
+function spawn(g, x){
+  const {p, r} = anim;
+  const y0 = p.B*(1 - Math.sqrt(Math.random()));       // hustota úmerná hĺbke vody
+  const inZone = y0 >= g.dL && y0 <= g.dR;
+  let over = false;
+  if (inZone && !r.okH) over = Math.random() < Math.min(0.6, (r.h1*1000 - r.hmax)/(r.h1*1000)*1.3);
+  return {x, y0, y:y0, cap: inZone && !over, over, drop: 0.15 + Math.random()*0.75, jit: 0.9 + Math.random()*0.2, fall: -1, rad: 1.5 + Math.random()*1.1};
+}
+function stepParticles(dt, g){
+  const {r} = anim;
+  const vpx = r.v*g.s;
+  const rate = Math.min(260, Math.max(25, r.Q*14));
+  anim.spawnAcc += rate*dt;
+  while (anim.spawnAcc >= 1){ anim.parts.push(spawn(g, -4 - Math.random()*vpx*dt)); anim.spawnAcc -= 1; }
+  const yIn = anim.p.bobr, yOut = anim.p.bobr + anim.p.a;
+  const out = [];
+  for (const q of anim.parts){
+    if (q.fall >= 0){ q.fall += dt; if (q.fall < 0.35) out.push(q); continue; }
+    q.x += vpx*q.jit*dt;
+    if (q.cap){
+      const target = Math.min(yOut - 0.01, Math.max(yIn + 0.01, q.y0));
+      const xs = g.gx0 - g.approach, xe = g.gx0 + q.drop*(g.gx1 - g.gx0);
+      const t = Math.min(1, Math.max(0, (q.x - xs)/(xe - xs)));
+      const e = t*t*(3 - 2*t);
+      q.y = q.y0 + (target - q.y0)*e;
+      if (q.x >= xe){ q.fall = 0; anim.cap++; }
+    } else if (q.over && q.x > g.gx0 && q.x < g.gx1){
+      q.y = q.y0 + Math.sin((q.x - g.gx0)/(g.gx1 - g.gx0)*Math.PI)*0.004;
+    }
+    if (q.x > anim.W + 6){ anim.pass++; continue; }
+    out.push(q);
+  }
+  anim.parts = out;
+}
+function seedParticles(g){
+  anim.parts = []; anim.spawnAcc = 0;
+  const T = (anim.W + 10)/(anim.r.v*g.s);
+  for (let t = 0; t < T; t += 0.04) stepParticles(0.04, g);
+  anim.cap = 0; anim.pass = 0;
+}
+function arrow(x1, y1, x2, y2, col){
+  ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  const a = Math.atan2(y2 - y1, x2 - x1);
+  ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - 8*Math.cos(a - 0.4), y2 - 8*Math.sin(a - 0.4)); ctx.lineTo(x2 - 8*Math.cos(a + 0.4), y2 - 8*Math.sin(a + 0.4)); ctx.closePath(); ctx.fill();
+}
+function label(t, x, y, col, align="left", weight=600, size=12.5){
+  ctx.font = `${weight} ${size}px "Barlow Semi Condensed", "Barlow", Arial, sans-serif`;
+  ctx.textAlign = align; ctx.textBaseline = "middle";
+  ctx.lineWidth = 4; ctx.strokeStyle = anim.col.surface; ctx.lineJoin = "round"; ctx.strokeText(t, x, y);
+  ctx.fillStyle = col; ctx.fillText(t, x, y);
+}
+function vbracket(x, y1, y2, col){
+  ctx.strokeStyle = col; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(x, y1); ctx.lineTo(x, y2); ctx.moveTo(x - 4, y1); ctx.lineTo(x + 4, y1); ctx.moveTo(x - 4, y2); ctx.lineTo(x + 4, y2); ctx.stroke();
+}
+function drawAnim(){
+  const {p, r, W, H, dpr, step} = anim;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const c = anim.col;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = c.surface; ctx.fillRect(0, 0, W, H);
+  const g = animGeo();
+  const yB = g.Y(p.B);
+  // deck
+  ctx.fillStyle = c.deck; ctx.fillRect(0, g.top, W, H - g.top);
+  // water with depth gradient
+  const gr = ctx.createLinearGradient(0, g.top, 0, yB);
+  gr.addColorStop(0, c.waterDeep); gr.addColorStop(1, c.waterShallow);
+  ctx.fillStyle = gr; ctx.fillRect(0, g.top, W, yB - g.top);
+  // spread edge
+  ctx.setLineDash([5, 4]); ctx.strokeStyle = c.water; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(0, yB); ctx.lineTo(W, yB); ctx.stroke(); ctx.setLineDash([]);
+  // zone a1
+  const zoneStrong = step === "2" || step === "3";
+  ctx.fillStyle = c.zone; ctx.globalAlpha = zoneStrong ? 1 : (step === "all" ? 0.6 : 0.25);
+  ctx.fillRect(0, g.Y(g.dL), g.gx1, g.Y(g.dR) - g.Y(g.dL));
+  ctx.globalAlpha = 1;
+  if (step !== "1" && step !== "4"){
+    ctx.setLineDash([3, 3]); ctx.strokeStyle = c.water; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, g.Y(g.dR)); ctx.lineTo(g.gx1, g.Y(g.dR)); ctx.stroke(); ctx.setLineDash([]);
+  }
+  // side inflow bands (k·h1)
+  if (step === "2"){
+    ctx.fillStyle = c.hatch;
+    ctx.fillRect(g.gx0 - g.approach, g.Y(p.bobr + p.a), g.gx1 - g.gx0 + g.approach, g.Y(g.dR) - g.Y(p.bobr + p.a));
+    if (p.bobr > g.dL) ctx.fillRect(g.gx0 - g.approach, g.Y(g.dL), g.gx1 - g.gx0 + g.approach, g.Y(p.bobr) - g.Y(g.dL));
+    const ym = g.Y((p.bobr + p.a + g.dR)/2);
+    arrow(g.gx0 - g.approach*0.9, ym, g.gx0 + (g.gx1 - g.gx0)*0.35, g.Y(p.bobr + p.a) + 3, c.ink);
+  }
+  // curb
+  ctx.fillStyle = c.curb; ctx.fillRect(0, 0, W, g.top);
+  ctx.strokeStyle = c.asphalt; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, g.top); ctx.lineTo(W, g.top); ctx.stroke();
+  label("obrubník", 10, g.top/2, c.muted, "left", 500, 12);
+  // grate
+  const gy0 = g.Y(p.bobr), gy1 = g.Y(p.bobr + p.a);
+  ctx.fillStyle = c.grate; ctx.fillRect(g.gx0, gy0, g.gx1 - g.gx0, gy1 - gy0);
+  ctx.strokeStyle = c.surface; ctx.lineWidth = 1.4;
+  const nb = Math.max(4, Math.round(g.len/0.035));
+  for (let i = 1; i < nb; i++){ const x = g.gx0 + (g.gx1 - g.gx0)*i/nb; ctx.beginPath(); ctx.moveTo(x, gy0 + 3); ctx.lineTo(x, gy1 - 3); ctx.stroke(); }
+  ctx.strokeStyle = r.okH ? c.asphalt : c.bad; ctx.lineWidth = r.okH ? 1.5 : 2.5; ctx.strokeRect(g.gx0, gy0, g.gx1 - g.gx0, gy1 - gy0);
+  // particles
+  for (const q of anim.parts){
+    let alpha = 0.9;
+    if (step === "3" && !q.cap) alpha = 0.18;
+    if (step === "4" && q.cap) alpha = 0.15;
+    if (step === "5" && !q.cap && !q.over) alpha = 0.3;
+    let rad = q.rad, hop = 0;
+    if (q.over && q.x > g.gx0 - 6 && q.x < g.gx1 + 6){ const t = (q.x - g.gx0 + 6)/(g.gx1 - g.gx0 + 12); hop = Math.sin(t*Math.PI)*7; rad *= 1.45; }
+    if (q.fall >= 0){ const k = 1 - q.fall/0.35; alpha *= k; rad *= 0.4 + 0.6*k; }
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = q.cap ? c.water : (q.over ? (q.x > g.gx0 - 6 ? c.bad : c.water) : c.pass);
+    ctx.beginPath(); ctx.arc(q.x, g.Y(q.y) - hop, rad, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  // dimensions
+  vbracket(14, g.top, yB, c.ink);
+  label(`B = ${nf(p.B,2)} m`, 22, g.Y(p.B*0.75), step === "1" ? c.water : c.ink);
+  const bx = Math.min(W - 90, g.gx1 + 22);
+  if (step !== "5"){
+    vbracket(bx, g.Y(g.dL), g.Y(g.dR), c.water);
+    label(`a₁ = ${nf(r.a1,3)} m`, bx + 8, (g.Y(g.dL) + g.Y(g.dR))/2, c.water);
+  }
+  if (step === "2"){
+    label(`k·h₁ = ${nf(r.kh1,3)} m`, g.gx0 - g.approach, g.Y(g.dR) + 14, c.ink, "left");
+    label(`mriežka a = ${nf(p.a,2)} m`, g.gx0 - 8, (gy0 + gy1)/2, c.ink, "right");
+  }
+  if (step === "1"){
+    label(`h = ${nf(r.h*1000,1)} mm pri obrubníku`, W*0.2, g.top + 14, c.ink, "left");
+    label("okraj rozliatia, h = 0", W*0.2, yB + 14, c.water, "left", 600, 12);
+  }
+  if (step === "3" || step === "all"){
+    label(`H od = ${nf(r.Hod,2)} l/s`, (g.gx0 + g.gx1)/2, Math.min(H - 60, g.Y(g.dR) + 16), c.water, "center");
+  }
+  if (step === "4"){
+    arrow(g.gx1 + 20, yB - (yB - g.Y(g.dR))/2, W - 12, yB - (yB - g.Y(g.dR))/2, c.ink);
+    label(`k ďalšiemu odvodňovaču, ${nf(r.Lodv,2)} m`, W - 14, yB - (yB - g.Y(g.dR))/2 - 14, c.ink, "right");
+  }
+  if (step === "5" && anim.demo) label(`modelový prípad: ${anim.demo.what === "ppd" ? `P pd = ${nf(p.ppd,1)} %` : `B = ${nf(p.B,2)} m`}`, W - 10, g.top/2, c.ink, "right");
+  if (!r.okH) label("h₁ > h max: mriežka je preťažená, časť vody pretečie", step === "5" && anim.demo ? Math.min(g.gx1, W - 190) : g.gx1, g.top/2, c.bad, "right");
+  if (step === "5" && !r.okH){
+    const ym = g.Y(Math.min(p.bobr + p.a*0.5, g.dR));
+    arrow(g.gx1 + 8, ym, Math.min(W - 16, g.gx1 + 130), ym, c.bad);
+    label("pretečie ďalej", Math.min(W - 16, g.gx1 + 130), ym + 14, c.bad, "right");
+  }
+  if (step === "5" && !r.okV) label(`v′ = ${nf(r.vs,2)} m/s > ${nf(r.vlim,1)} m/s, mimo grafu`, g.gx0, H - 40, c.bad, "left");
+  // flow arrow
+  const fy = H - 22;
+  const narrow = W < 560, ax0 = narrow ? 14 : W*0.30;
+  arrow(ax0, fy, ax0 + 50, fy, c.muted);
+  label(narrow ? `smer toku, v = ${nf(r.v,2)} m/s` : `smer toku, P pd = ${nf(p.ppd,2)} %, v = ${nf(r.v,2)} m/s`, ax0 + 60, fy, c.muted, "left", 500, 12);
+  if (!narrow) label(`mierka 1 m = ${nf(g.s,0)} px`, W - 10, fy, c.muted, "right", 500, 11.5);
+}
+function animStats(){
+  const {r} = anim, tot = anim.cap + anim.pass;
+  const meas = tot > 40 ? `${nf(anim.cap/tot*100,0)} %` : "…";
+  $("animstats").innerHTML = [
+    ["Prietok v rigole Q", nf(r.Q,2), "l/s"],
+    ["Zachytí odvodňovač H<sub>od</sub>", nf(r.Hod,2), "l/s"],
+    ["Obteká Q − H<sub>od</sub>", nf(r.Q - r.Hod,2), "l/s"],
+    ["Podiel zachytenia H<sub>od</sub>/Q", nf(r.Hod/r.Q*100,1), "%"],
+    [anim.r.okH ? "Zachytené kvapky v animácii" : "Zachytené kvapky (ilustračne, časť pretečie)", meas, ""]
+  ].map(x => anim.demo ? [x[0] + " (model)", x[1], x[2]] : x).map(x => `<div><div class="lab">${x[0]}</div><div class="big">${x[1]}<small>${x[2]}</small></div></div>`).join("");
+}
+function animText(){
+  const {p, r, step} = anim;
+  const sw = p.lines > 1 ? "š<sub>l</sub>" : "š";
+  const inflow = p.q*r.swl*p.phi*r.Lodv;
+  const T = {
+    all: `Voda tečie rigolom priemernou rýchlosťou v = ${nf(r.v,2)} m/s. Modré kvapky z pásu a<sub>1</sub> skončia v odvodňovači, sivé ho obtečú. Prepínaj kroky 1 až 4 pre vysvetlenie jednotlivých častí výpočtu.`,
+    "5": "",
+    "1": `Priečny sklon P<sub>pr</sub> = ${nf(p.ppr,2)} % ženie vodu k obrubníku, kde je najhlbšia (h = ${nf(r.h*1000,1)} mm). Rozlieva sa do šírky B = ${nf(p.B,2)} m a smerom od obrubníka plytčie, preto je tam menej kvapiek. Celkový prietok v rigole je Q = A · v = ${nf(r.Q,2)} l/s.`,
+    "2": `Mriežka nezachytí len vodu, ktorá tečie priamo nad ňou. Pred odvodňovačom sa voda stáča do strán, odvodňovač tak „dosiahne“ aj pás vedľa mriežky so šírkou k · h<sub>1</sub> = ${nf(r.kh1,3)} m (k = 5/v = ${nf(r.k,2)}). Spolu s mriežkou a pásom pri obrubníku vzniká spolupôsobiaca šírka a<sub>1</sub> = ${nf(r.a1,3)} m.`,
+    "3": `Všetka voda z pásu a<sub>1</sub> vtečie do odvodňovača: H<sub>od</sub> = A<sub>1</sub> · v = ${nf(r.Hod,2)} l/s, čo je ${nf(r.Hod/r.Q*100,1)} % prietoku v rigole. ` + (r.okH ? `Platí to len vtedy, ak mriežka vodu stihne pohltiť. To overuje podmienka h<sub>1</sub> = ${nf(r.h1*1000,1)} mm ≤ h<sub>max</sub> = ${nf(r.hmax,1)} mm z grafu výrobcu, ktorá je splnená.` : `Podmienka h<sub>1</sub> = ${nf(r.h1*1000,1)} mm ≤ h<sub>max</sub> = ${nf(r.hmax,1)} mm však splnená nie je, mriežka je preťažená a časť vody pretečie ponad štrbiny (v animácii červenou, len ilustračne). Hodnotu H<sub>od</sub> v takom prípade nemožno považovať za zaručenú.`),
+    "4": `Voda mimo pásu a<sub>1</sub>, teda Q − H<sub>od</sub> = ${nf(r.Q - r.Hod,2)} l/s, obteká odvodňovač a pokračuje k ďalšiemu. Odvodňovače sú od seba L<sub>odv</sub> = ${nf(r.Lodv,2)} m. Z tejto dĺžky pritečie q · ${sw} · φ · L<sub>odv</sub> = ${nf(inflow,2)} l/s, čo je H<sub>od</sub>/s. Zvyšok hltnosti je rezerva stupňa bezpečnosti s = ${nf(p.s,1)}.`
+  };
+  $("steptext").innerHTML = step === "5" ? failText() : `<p>${T[step]}</p>`;
+}
+function findDemo(p){
+  const start = Math.round(p.ppd*10)/10 + 0.1;
+  for (let x = start; x <= 15.001; x += 0.1){
+    const r = calc({...p, ppd:x});
+    if (!r.okV) break;
+    if (!r.okH){
+      let best = x;
+      for (let y = x + 0.1; y <= x + 0.8; y += 0.1){ const ry = calc({...p, ppd:y}); if (ry.okV && !ry.okH) best = y; else break; }
+      const pp = {...p, ppd: +best.toFixed(1)};
+      return {p:pp, r:calc(pp), what:"ppd"};
+    }
+  }
+  for (let b = p.B + 0.05; b <= p.B*4; b += 0.05){
+    const pp = {...p, B:+b.toFixed(2)}, r = calc(pp);
+    if (!r.okV) break;
+    if (!r.okH){ const pb = {...p, B:+(b + 0.15).toFixed(2)}, rb = calc(pb); return (rb.okV && !rb.okH) ? {p:pb, r:rb, what:"B"} : {p:pp, r, what:"B"}; }
+  }
+  return null;
+}
+function remedies(p, r){
+  const out = [];
+  let Bok = null;
+  for (let b = p.B - 0.01; b > p.bobr + p.a/2 + 0.02; b -= 0.01){ const rr = calc({...p, B:b}); if (rr.okH && rr.okV){ Bok = {b, rr}; break; } }
+  if (Bok) out.push(`<b>Zmenšiť návrhovú šírku rozliatia na B ≤ ${nf(Bok.b,2)} m.</b> Hĺbka v osi odvodňovača klesne na h<sub>1</sub> = ${nf(Bok.rr.h1*1000,1)} mm a mriežka vodu pohltí. Odvodňovač zachytí menej (H<sub>od</sub> = ${nf(Bok.rr.Hod,2)} l/s), preto ich treba osadiť hustejšie: L<sub>odv</sub> = ${nf(Bok.rr.Lodv,2)} m, min. ${Bok.rr.nodv} ks v línii.`);
+  ["g300","g500x300","g500"].filter(k => k !== p.typ).forEach(k => {
+    const pk = {...p, typ:k, a: parse(GRATES[k].a)}, rk = calc(pk);
+    if (rk.okH && rk.okV) out.push(`<b>Použiť ${GRATES[k].label.toLowerCase()}</b> (a = ${GRATES[k].a} m). Pri v′ = ${nf(rk.vs,2)} m/s pohltí vodu do h<sub>max</sub> = ${nf(rk.hmax,1)} mm, H<sub>od</sub> = ${nf(rk.Hod,2)} l/s, L<sub>odv</sub> = ${nf(rk.Lodv,2)} m.`);
+  });
+  if (!r.okV) out.push(`<b>Overiť hltnosť u výrobcu.</b> Graf končí pri v′ = ${nf(r.vlim,1)} m/s, pre vyššiu rýchlosť výpočet nemá podklad.`);
+  if (p.ppd > 0) out.push(`Pri moste s premenlivým sklonom posúď úseky s najväčším sklonom samostatne. Graf vzdialenosti podľa pozdĺžneho sklonu nižšie ukazuje, od akého sklonu odvodňovač prestáva vyhovovať.`);
+  return out;
+}
+function failText(){
+  const {p, r, demo, realP} = anim;
+  const g = GRATES[p.typ];
+  let head = "";
+  if (demo){
+    head = `<p class="demo">Tvoj návrh vyhovuje, preto animácia ukazuje <b>modelový prípad</b>: rovnaké vstupy, len ${demo.what === "ppd" ? `pozdĺžny sklon P<sub>pd</sub> = ${nf(p.ppd,1)} % namiesto ${nf(realP.ppd,1)} %` : `šírka rozliatia B = ${nf(p.B,2)} m namiesto ${nf(realP.B,2)} m`}.</p>`;
+  } else if (r.okH && r.okV){
+    return `<p>Pre zadané vstupy odvodňovač vyhovuje a modelový nevyhovujúci prípad sa nenašiel. Odvodňovač nevyhovuje vtedy, keď je voda v osi mriežky hlbšia, než koľko mriežka pri danej rýchlosti stihne pohltiť (h<sub>1</sub> &gt; h<sub>max</sub>), alebo keď je rýchlosť v′ mimo rozsahu grafu výrobcu.</p>`;
+  } else {
+    head = `<p class="demo bad">Tvoj návrh <b>nevyhovuje</b>, animácia ukazuje, čo sa na moste deje.</p>`;
+  }
+  let body = "";
+  if (!r.okH){
+    const ex = r.h1*1000 - r.hmax, gmax = Math.max(r.h1*1000, r.hmax)*1.15;
+    body += `<div class="gauge" aria-hidden="true"><div class="gbar"><span class="gfill" style="width:${(r.h1*1000/gmax*100).toFixed(1)}%"></span><span class="gmark" style="left:${(r.hmax/gmax*100).toFixed(1)}%"></span></div><div class="glab"><span>h<sub>1</sub> = ${nf(r.h1*1000,1)} mm</span><span>h<sub>max</sub> = ${nf(r.hmax,1)} mm${g.curves ? ` pri v′ = ${nf(r.vs,2)} m/s` : ""}</span><span class="b">prekročenie ${nf(ex,1)} mm</span></div></div>`;
+    body += `<p><b>Čo sa deje.</b> Štrbiny mriežky stihnú pohltiť vodu len do určitej hĺbky. ${g.curves ? `Táto hranica klesá s rýchlosťou: rýchlejšia voda štrbiny „preskakuje“, preto pri v′ = ${nf(r.vs,2)} m/s je h<sub>max</sub> len ${nf(r.hmax,1)} mm.` : `Pre zvolený odvodňovač je to h<sub>max</sub> = ${nf(r.hmax,1)} mm.`} V osi odvodňovača je však voda hlboká h<sub>1</sub> = ${nf(r.h1*1000,1)} mm. Horná vrstva vody preto pretečie ponad mriežku (červené kvapky) a odvodňovač zachytí menej než vypočítaných H<sub>od</sub> = ${nf(r.Hod,2)} l/s. Výpočet vzdialenosti L<sub>odv</sub> = ${nf(r.Lodv,2)} m tak stojí na hodnote, ktorú mriežka v skutočnosti nedosiahne.</p>`;
+    body += `<p><b>Prečo je to problém.</b> Pretečená voda sa pridá k obtoku, k ďalšiemu odvodňovaču priteká viac vody, rozliatie tam prekročí návrhovú šírku B a voda zasahuje ďalej do jazdného pruhu. Efekt sa reťazí po dĺžke mosta a voda sa hromadí pri nižšom konci, v prechodovej oblasti a pri mostnom závere.</p>`;
+  }
+  if (!r.okV){
+    body += `<p><b>Rýchlosť mimo grafu.</b> Povrchová rýchlosť v′ = ${nf(r.vs,2)} m/s je väčšia ako ${nf(r.vlim,1)} m/s, kde graf výrobcu končí. Hodnotu h<sub>max</sub> nemožno odčítať, aplikácia ju berie z konca krivky, čo nie je overené.</p>`;
+  }
+  const rem = remedies(p, r);
+  body += `<p><b>Ako to riešiť${demo ? " v tomto modelovom prípade" : ""}:</b></p><ul class="remedy">${rem.map(x => `<li>${x}</li>`).join("")}</ul>`;
+  return head + body;
+}
+function activeSet(){
+  const p = anim.realP, r = anim.realR;
+  anim.demo = (anim.step === "5" && r.okH && r.okV) ? findDemo(p) : null;
+  anim.p = anim.demo ? anim.demo.p : p;
+  anim.r = anim.demo ? anim.demo.r : r;
+  const key = JSON.stringify([anim.p.B, anim.p.a, anim.p.bobr, anim.p.ppr, anim.p.ppd, anim.p.n, anim.p.typ, anim.p.hmaxManual]);
+  if (key !== anim.key && anim.W){ anim.key = key; seedParticles(animGeo()); }
+}
+function animUpdate(p, r){
+  anim.realP = p; anim.realR = r;
+  anim.col = {surface:cssv("--surface"), ink:cssv("--ink"), muted:cssv("--muted"), water:cssv("--water"), bad:cssv("--bad"), asphalt:cssv("--asphalt"),
+    deck:cssv("--deck"), curb:cssv("--concrete-dark"), grate:cssv("--asphalt"), waterDeep:cssv("--water-deep"), waterShallow:cssv("--water-shallow"),
+    zone:cssv("--zone"), hatch:cssv("--water-fill"), pass:cssv("--pass")};
+  activeSet();
+  animText(); animStats();
+  $("step5").classList.toggle("alert", !(r.okH && r.okV));
+  if (!anim.playing) drawAnim();
+}
+function animLoop(ts){
+  requestAnimationFrame(animLoop);
+  if (!anim.p || !anim.playing || !anim.visible || document.hidden){ anim.last = ts; return; }
+  const dt = Math.min(0.05, (ts - (anim.last || ts))/1000)*anim.speed;
+  anim.last = ts;
+  const g = animGeo();
+  stepParticles(dt, g);
+  drawAnim();
+  anim.statT += dt/anim.speed;
+  if (anim.statT > 0.6){ anim.statT = 0; animStats(); }
+}
+function setupAnim(){
+  animResize();
+  if (window.ResizeObserver) new ResizeObserver(() => { const w = cv.parentElement.clientWidth; if (Math.abs(w - anim.W) > 2){ animResize(); if (anim.realP){ anim.key = ""; animUpdate(anim.realP, anim.realR); drawAnim(); } } }).observe(cv.parentElement);
+  if (window.IntersectionObserver) new IntersectionObserver(es => { anim.visible = es[0].isIntersecting; }).observe(cv);
+  $("animplay").textContent = anim.playing ? "Pozastaviť" : "Spustiť animáciu";
+  $("animplay").addEventListener("click", () => { anim.playing = !anim.playing; $("animplay").textContent = anim.playing ? "Pozastaviť" : "Spustiť animáciu"; });
+  $("animspeed").addEventListener("change", e => { anim.speed = +e.target.value; });
+  document.querySelectorAll("#animsteps button").forEach(b => b.addEventListener("click", () => {
+    anim.step = b.dataset.step;
+    document.querySelectorAll("#animsteps button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+    if (anim.realP){ activeSet(); animText(); animStats(); drawAnim(); }
+  }));
+  if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (anim.realP){ animUpdate(anim.realP, anim.realR); drawAnim(); } });
+  requestAnimationFrame(animLoop);
+}
+
+/* ---------- renderers ---------- */
+function renderVerdicts(p, r){
+  const g = GRATES[p.typ];
+  const items = [
+    {lab:"Výška vody v osi odvodňovača h<sub>1</sub>", big:`${nf(r.h1*1000,1)} ≤ ${nf(r.hmax,1)} mm`, ok:r.okH, st: r.okH ? (r.slot ? `Vyhovuje, pretekané štrbiny: ${r.slot}` : "Vyhovuje") : "Nevyhovuje, voda pretečie cez odvodňovač"},
+    {lab:"Rýchlosť vody na povrchu v′", big: r.vlim ? `${nf(r.vs,2)} ≤ ${nf(r.vlim,1)} m/s` : `${nf(r.vs,2)} m/s`, ok:r.okV, st: r.vlim ? (r.okV ? "V rozsahu grafu hltnosti" : "Mimo rozsahu grafu, over u výrobcu") : "Rozsah over v podkladoch výrobcu"},
+    {lab:"Vzdialenosť odvodňovačov L<sub>odv</sub>", big:`${nf(r.Lodv,2)} m`, ok:r.okH && r.okV, st:`min. ${r.nodv} ks v línii${p.lines>1?`, spolu ${r.ntot} ks`:""}`},
+    {lab:"Kapacita zberného potrubia", big:`${nf(r.Qp,1)} ≥ ${nf(r.QM,1)} l/s`, ok:r.okP, st: r.okP ? "Vyhovuje" : "Nevyhovuje"}
+  ];
+  if (!r.okP) items[3].big = `${nf(r.Qp,1)} < ${nf(r.QM,1)} l/s`;
+  if (!r.okH) items[0].big = `${nf(r.h1*1000,1)} > ${nf(r.hmax,1)} mm`;
+  if (!r.okV && r.vlim) items[1].big = `${nf(r.vs,2)} > ${nf(r.vlim,1)} m/s`;
+  $("verdicts").innerHTML = items.map(it => `<div class="verdict ${it.ok?"ok":"bad"}"><div class="lab">${it.lab}</div><div class="big">${it.big}</div><div class="st">${it.st}</div></div>`).join("");
+}
+
+function renderCross(p, r){
+  const W = 720, H = 322, curbX = 556, left = 30;
+  const dMax = p.B*1.14;
+  const hs = (curbX-left)/dMax;
+  const ppr = p.ppr/100;
+  const zMax = dMax*ppr;
+  const vs = 105/Math.max(zMax, 1e-6);
+  const baseY = 236;
+  const X = d => curbX - d*hs, Y = z => baseY - z*vs;
+  const exag = vs/hs;
+  let s = `<defs><pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="7" stroke="var(--water-hatch)" stroke-width="2"/></pattern></defs>`;
+  // slab
+  s += `<polygon class="slab" points="${X(dMax)},${Y(zMax)} ${curbX},${Y(0)} ${curbX},${baseY+44} ${X(dMax)},${Y(zMax)+44}"/>`;
+  // drain body
+  const dIn = p.bobr, dOut = p.bobr + p.a;
+  const dbx = X(dOut), dbw = X(dIn) - X(dOut);
+  const dbB = baseY + 50;
+  s += `<polygon class="drain" points="${dbx},${Y(dOut*ppr)} ${dbx+dbw},${Y(dIn*ppr)} ${dbx+dbw},${dbB} ${dbx},${dbB}"/>`;
+  s += `<line class="drain" x1="${dbx}" y1="${Y(dOut*ppr)}" x2="${dbx+dbw}" y2="${dbB}"/><line class="drain" x1="${dbx+dbw}" y1="${Y(dIn*ppr)}" x2="${dbx}" y2="${dbB}"/>`;
+  // curb
+  s += `<rect class="curb" x="${curbX}" y="${Y(p.B*ppr)-34}" width="36" height="${baseY+44-(Y(p.B*ppr)-34)}"/>`;
+  // water
+  s += `<polygon class="waterp" points="${X(p.B)},${Y(r.h)} ${curbX},${Y(r.h)} ${curbX},${Y(0)}"/>`;
+  // a1 hatch
+  const dL = Math.max(0, p.bobr - Math.min(p.bobr, r.kh1)), dR = Math.min(p.B, p.bobr + p.a + r.kh1);
+  if (dR > dL) s += `<polygon fill="url(#hatch)" points="${X(dR)},${Y(r.h)} ${X(dL)},${Y(r.h)} ${X(dL)},${Y(dL*ppr)} ${X(dR)},${Y(dR*ppr)}"/>`;
+  // road surface
+  s += `<polyline class="road" points="${X(dMax)},${Y(zMax)} ${curbX},${Y(0)}"/>`;
+  s += `<line class="grate" x1="${X(dOut)}" y1="${Y(dOut*ppr)}" x2="${X(dIn)}" y2="${Y(dIn*ppr)}"/>`;
+  // dimension lines
+  const dim = (xa, xb, y, txt, cls="") => {
+    const a = Math.min(xa,xb), b = Math.max(xa,xb);
+    let t = `<line class="dim" x1="${a}" x2="${b}" y1="${y}" y2="${y}"/><line class="dim" x1="${a}" x2="${a}" y1="${y-5}" y2="${y+5}"/><line class="dim" x1="${b}" x2="${b}" y1="${y-5}" y2="${y+5}"/>`;
+    t += `<line class="dim" x1="${a-3}" x2="${a+3}" y1="${y+3}" y2="${y-3}"/><line class="dim" x1="${b-3}" x2="${b+3}" y1="${y+3}" y2="${y-3}"/>`;
+    if (txt) t += `<text class="dimtxt ${cls}" x="${(a+b)/2}" y="${y-6}" text-anchor="middle">${txt}</text>`;
+    return t;
+  };
+  s += dim(X(p.B), curbX, 22, `B = ${nf(p.B,2)} m`);
+  s += dim(X(dR), X(dL), 52, `a₁ = ${nf(r.a1,3)} m`, "w");
+  const yr = 82;
+  if (r.kh1 > 0) s += dim(X(dR), X(dOut), yr, (X(dOut)-X(dR) > 70) ? `k·h₁ = ${nf(r.kh1,3)}` : "k·h₁");
+  s += dim(X(dOut), X(dIn), yr, (dbw > 56) ? `a = ${nf(p.a,3)}` : "a");
+  if (p.bobr > 0){
+    s += dim(X(dIn), curbX, yr + 26, "");
+    s += `<text class="dimtxt" x="${X(dIn)-8}" y="${yr+30}" text-anchor="end">${sb("b","obr",` = ${nf(p.bobr,3)}`)}</text>`;
+  }
+  // extension lines
+  [X(p.B), curbX].forEach(x => s += `<line class="dim" x1="${x}" x2="${x}" y1="16" y2="${x===curbX?Y(p.B*ppr)-34:Y(r.h)}" stroke-dasharray="2 3"/>`);
+  [X(dR), X(dL)].forEach(x => s += `<line class="dim" x1="${x}" x2="${x}" y1="46" y2="${Y(r.h)}" stroke-dasharray="2 3"/>`);
+  [X(dOut), X(dIn)].forEach(x => s += `<line class="dim" x1="${x}" x2="${x}" y1="${yr-6}" y2="${Y(r.h)}" stroke-dasharray="2 3"/>`);
+  // vertical h at curb
+  const vx = curbX + 56;
+  s += `<line class="dim" x1="${vx}" x2="${vx}" y1="${Y(r.h)}" y2="${Y(0)}"/><line class="dim" x1="${curbX+36}" x2="${vx+5}" y1="${Y(r.h)}" y2="${Y(r.h)}"/><line class="dim" x1="${curbX+36}" x2="${vx+5}" y1="${Y(0)}" y2="${Y(0)}"/>`;
+  s += `<text class="dimtxt w" x="${vx+8}" y="${(Y(r.h)+Y(0))/2+4}">h = ${nf(r.h*1000,1)} mm</text>`;
+  // h1 at drain axis
+  const ax = X(p.bobr + p.a/2), zAx = (p.bobr + p.a/2)*ppr;
+  s += `<line stroke="var(--water)" stroke-width="1.6" x1="${ax}" x2="${ax}" y1="${Y(r.h)}" y2="${Y(zAx)}"/>`;
+  s += `<text class="dimtxt w" x="${ax}" y="${Y(r.h)-8}" text-anchor="middle">h₁ = ${nf(r.h1*1000,1)} mm</text>`;
+  // slope note
+  s += `<text class="small" x="${X(dMax)+4}" y="${Y(zMax)-10}">${sb("P","pr",` = ${nf(p.ppr,2)} %  →`)}</text>`;
+  s += `<text class="small" x="${left}" y="${H-6}">Výšky sú prevýšené ${nf(exag,0)}×. Šrafovaná plocha A₁ = a₁ · ø h′₁ vteká do odvodňovača.</text>`;
+  $("cross").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Priečny rez rigolom s rozliatím vody">${s}</svg>`;
+  $("crosscap").innerHTML = `Voda sa rozlieva do šírky <b>B = ${nf(p.B,2)} m</b> od obrubníka. Odvodňovač zachytí vodu zo spolupôsobiacej šírky <b>a₁ = ${nf(r.a1,3)} m</b>, čo je <b>${nf(r.Hod,2)} l/s</b> z celkového prietoku v rigole ${nf(r.Q,2)} l/s.`;
+}
+
+function renderCapacity(p, r){
+  const g = GRATES[p.typ];
+  if (!g.curves){
+    $("captitle").textContent = "Graf hltnosti";
+    $("capchart").innerHTML = `<p class="note" style="margin:8px 4px">Pre zvolený typ nie je graf k dispozícii. Porovnávam h₁ = ${nf(r.h1*1000,1)} mm s ručne zadanou hodnotou h<sub>max</sub> = ${nf(r.hmax,1)} mm.</p>`;
+    $("capcap").innerHTML = "";
+    return;
+  }
+  $("captitle").textContent = `Graf hltnosti – ${g.label.toLowerCase()}`;
+  const top = g.curves[g.curves.length-1];
+  const ymaxRaw = Math.max(top[0][1], r.h1*1000) + 4;
+  const ym = Math.ceil(ymaxRaw/10)*10;
+  const W = 720, H = 440;
+  const F = frame({W,H,ml:52,mr:64,mt:14,mb:46,x0:0,x1:g.vlim,y0:0,y1:ym,
+    xt: range(0, g.vlim, g.vlim > 1 ? 0.25 : 0.1), yt: range(0, ym, ym > 60 ? 10 : 5),
+    fx: v => String(+v.toFixed(3)).replace(".", ","), fy: v => nf(v,0),
+    xl:"Povrchová rýchlosť vody na prítoku k mriežke v′ [m/s]", yl:"Výška vody na prítoku k mriežke h₁ [mm]"});
+  const {sx, sy} = F;
+  let s = "";
+  const ov = [[0, ym], [0, top[0][1]], ...top, [g.vlim, ym]];
+  s += `<path class="ovf" d="${pathOf(ov, sx, sy)}Z"/>`;
+  s += F.s;
+  s += `<text class="ovftxt" x="${sx(g.vlim*0.70)}" y="${sy(ym*0.88)}" text-anchor="middle">oblasť pretoku</text>`;
+  g.curves.forEach((c, i) => {
+    const isTop = i === g.curves.length-1;
+    s += `<path class="curve${isTop?" top":""}" d="${pathOf(c, sx, sy)}"/>`;
+    const lp = c[c.length-1];
+    s += `<text class="slot" x="${sx(lp[0])+7}" y="${sy(lp[1])+4}">${g.slots[i]}</text>`;
+  });
+  s += `<text class="slot" x="${W-4}" y="${sy(top[top.length-1][1]) - 30}" text-anchor="end">počet</text><text class="slot" x="${W-4}" y="${sy(top[top.length-1][1]) - 16}" text-anchor="end">štrbín</text>`;
+  // operating point
+  const vx = Math.min(r.vs, g.vlim), hy = r.h1*1000;
+  const ok = r.okH && r.okV;
+  s += `<line class="guide" x1="${sx(vx)}" x2="${sx(vx)}" y1="${sy(Math.max(hy, r.hmax))}" y2="${sy(0)}"/>`;
+  s += `<line class="guide" x1="${sx(0)}" x2="${sx(vx)}" y1="${sy(hy)}" y2="${sy(hy)}"/>`;
+  s += `<rect class="mark" x="${sx(vx)-5}" y="${sy(r.hmax)-5}" width="10" height="10" transform="rotate(45 ${sx(vx)} ${sy(r.hmax)})"/>`;
+  const tx = sx(vx) + (vx > g.vlim*0.6 ? -12 : 12), anchor = vx > g.vlim*0.6 ? "end" : "start";
+  s += `<text class="ann" x="${tx}" y="${sy(r.hmax)-10}" text-anchor="${anchor}">${sb("h","max",` = ${nf(r.hmax,1)} mm`)}</text>`;
+  s += `<circle class="${ok?"pt-ok":"pt-bad"}" cx="${sx(vx)}" cy="${sy(hy)}" r="7"/>`;
+  s += `<text class="ann ${ok?"ann-ok":"ann-bad"}" x="${tx}" y="${sy(hy)+(hy < r.hmax - 6 ? 18 : 22)}" text-anchor="${anchor}">h₁ = ${nf(hy,1)} mm, v′ = ${nf(r.vs,2)} m/s${r.okV?"":" (mimo grafu)"}</text>`;
+  $("capchart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Graf hltnosti odvodňovača s vyznačeným bodom">${s}</svg>`;
+  const reserve = r.hmax - hy;
+  $("capcap").innerHTML = r.okH
+    ? `Bod leží pod hraničnou krivkou, rezerva <b>${nf(reserve,1)} mm</b> (${nf(reserve/r.hmax*100,0)} %). ${r.slot?`Počet pretekaných štrbín mriežky: ${r.slot}.`:""} ${g.info}`
+    : `Bod leží v oblasti pretoku, h₁ prekračuje h<sub>max</sub> o <b>${nf(-reserve,1)} mm</b>. Zmenši šírku rozliatia B, posuň odvodňovač bližšie k obrubníku alebo zvoľ väčší typ. ${g.info}`;
+}
+
+function renderSens(p, r){
+  const xmax = Math.max(6, Math.ceil(p.ppd*1.3));
+  const pts = [];
+  for (let x = 0.25; x <= xmax + 1e-9; x += 0.05){
+    const rr = calc({...p, ppd:x});
+    pts.push({x, L: rr.Lodv, ok: rr.okH && rr.okV});
+  }
+  const Lmax = Math.max(...pts.map(q=>q.L), r.Lodv);
+  const {max: ym, step} = niceMax(Lmax*1.05, 5);
+  const W = 720, H = 340;
+  const F = frame({W,H,ml:52,mr:20,mt:14,mb:46,x0:0,x1:xmax,y0:0,y1:ym,
+    xt: range(0, xmax, xmax > 8 ? 2 : 1), yt: range(0, ym, step),
+    fx: v => nf(v,0), fy: v => nf(v, Number.isInteger(step) ? 0 : 1),
+    xl:`Pozdĺžny sklon ${sb("P","pd"," [%]")}`, yl:`Vzdialenosť odvodňovačov ${sb("L","odv"," [m]")}`});
+  const {sx, sy} = F;
+  let s = "";
+  // bad zones background
+  let zs = null;
+  pts.forEach((q, i) => {
+    if (!q.ok && zs === null) zs = q.x;
+    if ((q.ok || i === pts.length-1) && zs !== null){ const ze = q.ok ? pts[i-1].x : q.x; s += `<rect class="badzone" x="${sx(zs)}" y="${sy(ym)}" width="${Math.max(2, sx(ze)-sx(zs))}" height="${sy(0)-sy(ym)}"/>`; zs = null; }
+  });
+  s += F.s;
+  const runs = []; let cur = null;
+  pts.forEach(q => {
+    if (!cur || cur.ok !== q.ok){ const last = cur ? cur.pts[cur.pts.length-1] : null; cur = {ok:q.ok, pts: last ? [last] : []}; runs.push(cur); }
+    cur.pts.push([q.x, q.L]);
+  });
+  runs.forEach(rn => { s += `<path class="${rn.ok?"line-ok":"line-bad"}" d="${pathOf(rn.pts, sx, sy)}"/>`; });
+  const ok = r.okH && r.okV;
+  s += `<line class="guide" x1="${sx(p.ppd)}" x2="${sx(p.ppd)}" y1="${sy(r.Lodv)}" y2="${sy(0)}"/><line class="guide" x1="${sx(0)}" x2="${sx(p.ppd)}" y1="${sy(r.Lodv)}" y2="${sy(r.Lodv)}"/>`;
+  s += `<circle class="${ok?"pt-ok":"pt-bad"}" cx="${sx(Math.min(p.ppd,xmax))}" cy="${sy(r.Lodv)}" r="7"/>`;
+  const right = p.ppd > xmax*0.6;
+  s += `<text class="ann" x="${sx(p.ppd)+(right?-12:12)}" y="${sy(r.Lodv)+(right?-14:24)}" text-anchor="${right?"end":"start"}">${nf(r.Lodv,2)} m pri ${nf(p.ppd,2)} %</text>`;
+  $("senschart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Vzdialenosť odvodňovačov v závislosti od pozdĺžneho sklonu">${s}</svg>`;
+  const badFrom = pts.find(q => !q.ok && q.x > 0.3);
+  $("senscap").innerHTML = `Ostatné vstupy zostávajú rovnaké. ${badFrom ? `Od sklonu približne <b>${nf(badFrom.x,1)} %</b> (prerušovaná čiara) by voda pretekala cez odvodňovač alebo by v′ vyšla mimo rozsah grafu, vtedy navrhni odvodňovače hustejšie, zmenši B alebo zvoľ iný typ.` : "V celom zobrazenom rozsahu sklonov zostáva bod pod hraničnou krivkou."} Graf pomáha pri moste s premenlivým pozdĺžnym sklonom.`;
+}
+
+function renderPipe(p, r){
+  const pts = []; for (let f = 5; f <= 100.001; f += 1) pts.push([f, pipe(p, f).Qp]);
+  const Qmax = Math.max(...pts.map(q=>q[1]), r.QM);
+  const {max: ym, step} = niceMax(Qmax*1.08, 5);
+  const W = 720, H = 340;
+  const F = frame({W,H,ml:52,mr:20,mt:14,mb:46,x0:0,x1:100,y0:0,y1:ym,
+    xt: range(0, 100, 10), yt: range(0, ym, step), fx: v => nf(v,0), fy: v => nf(v, Number.isInteger(step) ? 0 : 1),
+    xl:"Plnenie potrubia h/d [%]", yl:`Prietok ${sb("Q","pot"," [l/s]")}`});
+  const {sx, sy} = F;
+  let s = F.s;
+  s += `<line class="ref" x1="${sx(0)}" x2="${sx(100)}" y1="${sy(r.QM)}" y2="${sy(r.QM)}"/>`;
+  s += `<text class="ann" x="${sx(2)}" y="${sy(r.QM)-7}">${sb("Q","M",` = ${nf(r.QM,1)} l/s`)}</text>`;
+  s += `<path class="line-ok" d="${pathOf(pts, sx, sy)}"/>`;
+  s += `<line class="guide" x1="${sx(p.fill)}" x2="${sx(p.fill)}" y1="${sy(r.Qp)}" y2="${sy(0)}"/>`;
+  s += `<circle class="${r.okP?"pt-ok":"pt-bad"}" cx="${sx(p.fill)}" cy="${sy(r.Qp)}" r="7"/>`;
+  s += `<text class="ann ${r.okP?"ann-ok":"ann-bad"}" x="${sx(p.fill)-12}" y="${sy(r.Qp)-12}" text-anchor="end">${nf(r.Qp,1)} l/s pri ${nf(p.fill,1)} %</text>`;
+  $("pipechart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Prietok potrubím v závislosti od plnenia">${s}</svg>`;
+  // find required fill
+  let need = null; for (const q of pts){ if (q[1] >= r.QM){ need = q[0]; break; } }
+  $("pipecap").innerHTML = need !== null
+    ? `Potrubie DN ${nf(p.dpot*1000,0)} pri sklone ${nf(p.ipot,2)} % prevedie Q<sub>M</sub> už pri plnení približne <b>${nf(need,0)} %</b>.`
+    : `Potrubie DN ${nf(p.dpot*1000,0)} pri sklone ${nf(p.ipot,2)} % neprevedie Q<sub>M</sub> ani pri plnom profile. Zväčši priemer alebo sklon.`;
+}
+
+let lastRows = [];
+function table(id, rows){
+  $(id).innerHTML = `<thead><tr><th>Značka</th><th>Veličina</th><th style="text-align:right">Hodnota</th><th>Jednotka</th><th>Vzťah</th></tr></thead><tbody>` +
+    rows.map(r => `<tr class="${r.cls||""}"><td class="sym">${r[0]}</td><td>${r[1]}</td><td class="val">${typeof r[2]==="string"?r[2]:nf(r[2],r[4])}</td><td class="unit">${r[3]}</td><td class="f">${r[5]||""}</td></tr>`).join("") + `</tbody>`;
+}
+function renderTables(p, r){
+  const k = (row, cls) => { row.cls = cls; return row; };
+  const t1 = [
+    ["h","Výška vody pri obrubníku",r.h*1000,"mm",1,"h = B · P<sub>pr</sub>"],
+    ["A","Plocha vody v rigole",r.A,"m²",5,"A = 0,5 · B · h"],
+    ["O","Omočený obvod",r.O,"m",3,"O = B + h"],
+    ["R","Hydraulický polomer",r.R,"m",5,"R = A / O"],
+    ["C","Rýchlostný súčiniteľ",r.C,"m<sup>0,5</sup>/s",2,"C = R<sup>1/6</sup> / n"],
+    ["v","Rýchlosť na vtoku",r.v,"m/s",3,"v = C · R<sup>1/2</sup> · P<sub>pd</sub><sup>1/2</sup>"],
+    ["Q","Prietok v rigole",r.Q,"l/s",2,"Q = A · v · 1000"],
+    k(["v′","Rýchlosť vody na povrchu",r.vs,"m/s",3,"v′ = 1,15 · v" + (r.vlim?` ≤ ${nf(r.vlim,1)}`:"")], r.okV?"okrow":"badrow"),
+    ["h′<sub>1</sub>","Výška vody v osi odvodňovača",r.h1*1000,"mm",1,"h′<sub>1</sub> = (B − b<sub>obr</sub> − a/2) · P<sub>pr</sub>"],
+    k(["h<sub>max</sub>","Max. výška vody (graf hltnosti)",r.hmax,"mm",1, GRATES[p.typ].curves ? "odčítané z grafu pre v′" : "zadané ručne"], ""),
+    k(["h<sub>1</sub> ≤ h<sub>max</sub>","Posúdenie", r.okH ? "Vyhovuje" : "Nevyhovuje","","",""], r.okH?"okrow":"badrow"),
+    ["k","Súčiniteľ bočného nátoku",r.k,"",3,"k = 5 / v"],
+    ["k · h<sub>1</sub>","Priľahlá šírka",r.kh1,"m",3,""],
+    ["a<sub>1</sub>","Spolupôsobiaca šírka",r.a1,"m",3,"a<sub>1</sub> = k·h<sub>1</sub> + a + min(b<sub>obr</sub>; k·h<sub>1</sub>)"],
+    ["ø h′<sub>1</sub>","Priemerná výška vody",r.hp*1000,"mm",1,"ø h′<sub>1</sub> = (B − a<sub>1</sub>/2) · P<sub>pr</sub>"],
+    ["A<sub>1</sub>","Plocha vody pritekajúcej k odvodňovaču",r.A1,"m²",5,"A<sub>1</sub> = a<sub>1</sub> · ø h′<sub>1</sub>"],
+    k(["H<sub>od</sub>","Hltnosť odvodňovača",r.Hod,"l/s",2,"H<sub>od</sub> = A<sub>1</sub> · v · 1000"], "key")
+  ];
+  const t2 = [
+    ["F<sub>m</sub>","Odvodňovaná plocha mosta",r.Fm,"m²",2,"F<sub>m</sub> = š · l"],
+    ["Q<sub>M</sub>","Množstvo odvádzanej vody",r.QM,"l/s",2,"Q<sub>M</sub> = F<sub>m</sub> · q · φ"]
+  ];
+  if (p.lines > 1) t2.push(["š<sub>l</sub>","Šírka pripadajúca na jednu líniu",r.swl,"m",2,"š<sub>l</sub> = š / n<sub>l</sub>"]);
+  t2.push(k(["L<sub>odv</sub>","Vzdialenosť odvodňovačov",r.Lodv,"m",2, p.lines>1 ? "L<sub>odv</sub> = H<sub>od</sub> / (q · š<sub>l</sub> · φ · s)" : "L<sub>odv</sub> = H<sub>od</sub> / (q · š · φ · s)"], "key"));
+  t2.push(["n","Min. počet odvodňovačov v línii",String(r.nodv),"ks","","n = ⌈l / L<sub>odv</sub>⌉"]);
+  t2.push(["L","Rovnomerná vzdialenosť pri n kusoch",r.Lreal,"m",2,"L = l / n"]);
+  if (p.lines > 1) t2.push(["n<sub>c</sub>","Počet odvodňovačov spolu",String(r.ntot),"ks","","n<sub>c</sub> = n · n<sub>l</sub>"]);
+  const t3 = [
+    ["α","Stredový uhol zaplnenia",r.theta,"°",1,"α = 2 · arccos(1 − 2·h/d)"],
+    ["S<sub>pot</sub>","Prietoková plocha",r.Sp,"m²",5,"S<sub>pot</sub> = r²/2 · (α − sin α)"],
+    ["O<sub>pot</sub>","Omočený obvod",r.Op,"m",4,"O<sub>pot</sub> = r · α"],
+    ["R<sub>pot</sub>","Hydraulický polomer",r.Rp,"m",5,"R<sub>pot</sub> = S<sub>pot</sub> / O<sub>pot</sub>"],
+    ["c","Rýchlostný súčiniteľ",r.cp,"m<sup>0,5</sup>/s",2,"c = (1/n) · R<sub>pot</sub><sup>1/6</sup>"],
+    ["v<sub>pot</sub>","Stredná profilová rýchlosť",r.vp,"m/s",3,"v<sub>pot</sub> = c · (R<sub>pot</sub> · i<sub>pot</sub>)<sup>1/2</sup>"],
+    k(["Q<sub>pot</sub>","Objemový prietok potrubia",r.Qp,"l/s",2,"Q<sub>pot</sub> = S<sub>pot</sub> · v<sub>pot</sub> · 1000"], "key"),
+    k(["Q<sub>pot</sub> ≥ Q<sub>M</sub>","Posúdenie potrubia", r.okP ? "Vyhovuje" : "Nevyhovuje","","",`${nf(r.Qp,2)} ${r.okP?"≥":"<"} ${nf(r.QM,2)} l/s`], r.okP?"okrow":"badrow")
+  ];
+  table("t1", t1); table("t2", t2); table("t3", t3);
+  const g = GRATES[p.typ];
+  $("kpi2").innerHTML = [
+    ["Hltnosť jedného odvodňovača", nf(r.Hod,2), "l/s"],
+    ["Prítok z mosta Q<sub>M</sub>", nf(r.QM,2), "l/s"],
+    ["Vzdialenosť L<sub>odv</sub>", nf(r.Lodv,2), "m"],
+    [p.lines>1 ? "Počet odvodňovačov spolu" : "Min. počet odvodňovačov", String(p.lines>1 ? r.ntot : r.nodv), "ks"]
+  ].map(x => `<div class="kpi"><div class="lab">${x[0]}</div><div class="big">${x[1]}<small>${x[2]}</small></div></div>`).join("");
+  // protocol
+  const inputsTxt = GROUPS.flatMap(gr => gr.fields).filter(f => f.type !== "select" && (!f.customOnly || p.typ === "custom"))
+    .map(f => `${plain(f.sym)}\t${f.name}\t${String(state[f.id]).trim()}\t${f.unit}`);
+  const fmtRow = row => `${plain(row[0])}\t${row[1]}\t${typeof row[2]==="string"?row[2]:nf(row[2],row[4])}\t${plain(row[3])}`;
+  lastRows = [
+    "VÝPOČET ODVODNENIA MOSTA", `Typ odvodňovača\t${g.label}`, "",
+    "VSTUPY", ...inputsTxt, "",
+    "HLTNOSŤ ODVODŇOVAČA", ...t1.map(fmtRow), "",
+    "VÝPOČET MNOŽSTVA ODVODŇOVAČOV", ...t2.map(fmtRow), "",
+    "VÝPOČET POTRUBIA", ...t3.map(fmtRow)
+  ];
+}
+
+function update(){
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e) {}
+  const g = GRATES[state.typ];
+  $("typinfo").innerHTML = g.info + (g.a ? ` Šírka a sa pri zmene typu nastaví na ${g.a} m.` : "");
+  document.querySelectorAll(".customonly").forEach(el => el.classList.toggle("hidden", state.typ !== "custom"));
+  const {p, bad} = readParams();
+  document.querySelectorAll(".field input").forEach(el => el.classList.toggle("err", bad.includes(el.id.slice(2))));
+  const msgs = [];
+  if (bad.length) msgs.push("Doplň kladné číselné hodnoty v označených poliach (desatinná čiarka aj bodka sú v poriadku).");
+  if (!bad.length && p.B <= p.bobr + p.a/2) msgs.push("Šírka rozliatia B musí byť väčšia ako b<sub>obr</sub> + a/2, inak voda k osi odvodňovača nedotečie.");
+  if (msgs.length){ $("msg").innerHTML = msgs.join(" "); $("msg").classList.remove("hidden"); return; }
+  const r = calc(p);
+  if (r.hp <= 0){ $("msg").innerHTML = "Spolupôsobiaca šírka a₁ vychádza väčšia ako 2·B, skontroluj vstupy B, a a b<sub>obr</sub>."; $("msg").classList.remove("hidden"); return; }
+  $("msg").classList.add("hidden");
+  renderVerdicts(p, r); renderCross(p, r); renderCapacity(p, r); renderSens(p, r); renderPipe(p, r); renderTables(p, r); animUpdate(p, r);
+}
+
+function toast(t){ const el = $("toast"); el.textContent = t; el.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove("show"), 2200); }
+$("copy").addEventListener("click", async () => {
+  const txt = lastRows.join("\n");
+  let ok = false;
+  try { await navigator.clipboard.writeText(txt); ok = true; } catch(e) {
+    try { const ta = document.createElement("textarea"); ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); ta.remove(); } catch(e2) {}
+  }
+  toast(ok ? "Protokol skopírovaný, vlož ho do Excelu alebo Wordu" : "Kopírovanie zlyhalo, prehliadač ho nepovolil");
+});
+$("reset").addEventListener("click", () => { state = {...DEFAULTS}; fillInputs(); update(); toast("Obnovené hodnoty z výpočtového listu 205-00"); });
+
+buildInputs();
+setupAnim();
+update();
+</script>
+</body>
+</html>
