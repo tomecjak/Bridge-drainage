@@ -3,54 +3,69 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
 <title>Odvodnenie mosta – hltnosť odvodňovačov</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="top">
-  <div>
-    <h1>Odvodnenie mosta</h1>
-    <p>Hltnosť mostného odvodňovača, vzdialenosť odvodňovačov a posúdenie zberného potrubia. Postup zodpovedá výpočtovému listu 205-00, odčítanie z grafu hltnosti robí aplikácia sama.</p>
-  </div>
-  <div class="actions">
-    <button class="btn" id="reset" type="button">Obnoviť príklad 205-00</button>
-    <button class="btn primary" id="copy" type="button">Kopírovať protokol</button>
+  <div class="wrap topin">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5c3 3.8 5 6.7 5 9.3a5 5 0 0 1-10 0c0-2.6 2-5.5 5-9.3z"/><path d="M2 21h20"/></svg></div>
+      <div>
+        <div class="bname">Odvodnenie mosta</div>
+        <div class="bsub" id="bsub">Výpočtový list 205-00</div>
+      </div>
+    </div>
+    <nav class="steps" aria-label="Kroky výpočtu">
+      <button type="button" data-step="1"><span class="num">1</span><span>Hltnosť</span><span class="dot" id="dot1"></span></button>
+      <button type="button" data-step="2"><span class="num">2</span><span>Rozostup</span><span class="dot" id="dot2"></span></button>
+      <button type="button" data-step="3"><span class="num">3</span><span>Potrubie</span><span class="dot" id="dot3"></span></button>
+      <button type="button" data-step="4"><span class="num">4</span><span>Protokol</span><span class="dot" id="dot4"></span></button>
+    </nav>
+    <div class="actions">
+      <button class="btn ghost" id="reset" type="button">Obnoviť príklad</button>
+      <button class="btn accent" type="button" data-go="4">Protokol PDF</button>
+    </div>
   </div>
 </header>
 
-<div class="wrapv"><div class="verdicts" id="verdicts" aria-live="polite"></div></div>
-<div class="wrapv"><div class="msg hidden" id="msg" role="alert"></div></div>
+<div class="wrap"><div class="msg hidden" id="msg" role="alert"></div></div>
 
-<div class="layout">
-  <aside class="inputs" id="inputs" aria-label="Vstupné údaje"></aside>
-  <main>
-    <section id="s1">
-      <h2>Hltnosť odvodňovača</h2>
-      <p class="lead">Prietok v trojuholníkovom rigole pri obrubníku a množstvo vody, ktoré zachytí jeden odvodňovač. Bod v grafe musí ležať pod hraničnou krivkou výrobcu.</p>
-      <div class="figs">
-        <figure class="wide">
-          <p class="figtitle">Priečny rez rigolom</p>
-          <div class="chartbox" id="cross"></div>
-          <figcaption id="crosscap"></figcaption>
-        </figure>
-        <figure class="wide">
-          <p class="figtitle" id="captitle">Graf hltnosti</p>
-          <div class="chartbox" id="capchart"></div>
-          <figcaption id="capcap"></figcaption>
-        </figure>
+<!-- KROK 1 -->
+<section class="view wrap" data-view="1" aria-labelledby="h1-1">
+  <div class="layout">
+    <aside class="panel params" aria-label="Parametre – rigol a odvodňovač">
+      <div class="phead"><h2>Parametre</h2><span>zadaj presné hodnoty</span></div>
+      <div id="params1"></div>
+    </aside>
+    <div class="content">
+      <div class="stephead">
+        <div class="shtext">
+          <div class="eyebrow">Krok 1 / 4</div>
+          <h1 id="h1-1">Hltnosť odvodňovača</h1>
+          <p class="lead">Koľko vody priteká rigolom k odvodňovaču a koľko z nej mriežka zachytí. Bod v grafe musí ležať pod hraničnou krivkou výrobcu.</p>
+        </div>
+        <div class="result" id="res1" aria-live="polite"></div>
       </div>
-      <div class="tablewrap"><table id="t1"></table></div>
-    </section>
-
-    <section id="s1b">
-      <h2>Ako odvodňovač zachytáva vodu</h2>
-      <p class="lead">Pôdorys rigolu pri obrubníku podľa aktuálneho výpočtu, v mierke a v reálnom čase. Každá kvapka predstavuje časť prietoku, ich hustota zodpovedá hĺbke vody.</p>
-      <figure class="wide animfig">
+      <div class="alert hidden" id="fail1"></div>
+      <div class="tiles" id="tiles1"></div>
+      <section class="panel calc">
+        <button class="calctoggle" type="button" aria-expanded="true" aria-controls="calc1"><span><b>Postup výpočtu</b><span class="sub" id="calc1n"></span></span><span class="chev" aria-hidden="true"></span></button>
+        <div class="calcbody" id="calc1"></div>
+      </section>
+      <section class="panel viz">
+        <div class="vizhead"><b>Priečny rez rigolom</b><span class="muted">prevýšená schéma podľa zadaných hodnôt</span></div>
+        <div class="chartbox" id="cross"></div>
+        <p class="cap" id="crosscap"></p>
+      </section>
+      <section class="panel viz">
+        <div class="vizhead"><b>Ako odvodňovač zachytáva vodu</b><span class="muted">pôdorys rigolu v mierke a v reálnom čase</span></div>
         <div class="animbar">
-          <button class="btn" id="animplay" type="button">Pozastaviť</button>
+          <button class="btn ghost sm" id="animplay" type="button">Pozastaviť</button>
           <div class="seg" id="animsteps" role="group" aria-label="Krok vysvetlenia">
             <button type="button" data-step="all" aria-pressed="true">Celý proces</button>
             <button type="button" data-step="1" aria-pressed="false">1 Rozliatie</button>
@@ -64,43 +79,129 @@
           </label>
         </div>
         <div class="canvaswrap"><canvas id="animcv" role="img" aria-label="Animácia toku vody v rigole a jej zachytenia odvodňovačom"></canvas></div>
-        <div class="legend"><span><i class="sw cap"></i><span>voda, ktorú odvodňovač zachytí (H<sub>od</sub>)</span></span><span><i class="sw pass"></i><span>voda, ktorá odvodňovač obtečie (Q − H<sub>od</sub>)</span></span><span><i class="sw zone"></i><span>spolupôsobiaca šírka a<sub>1</sub></span></span><span><i class="sw over"></i><span>voda, ktorá pretečie ponad preťaženú mriežku</span></span></div>
+        <div class="legend"><span><i class="sw cap"></i>voda, ktorú odvodňovač zachytí (H<sub>od</sub>)</span><span><i class="sw pass"></i>voda, ktorá odvodňovač obtečie</span><span><i class="sw zone"></i>spolupôsobiaca šírka a<sub>1</sub></span><span><i class="sw over"></i>voda, ktorá pretečie ponad preťaženú mriežku</span></div>
         <div class="steptext" id="steptext"></div>
         <div class="animstats" id="animstats"></div>
-      </figure>
-    </section>
+      </section>
+      <section class="panel viz">
+        <div class="vizhead"><b id="captitle">Graf hltnosti</b>
+          <div class="keys"><span><i class="k-top"></i>hranica hltnosti</span><span><i class="k-cur"></i>krivky podľa štrbín</span><span><i class="k-ovf"></i>pretok</span></div>
+        </div>
+        <div class="chartbox" id="capchart"></div>
+        <p class="cap" id="capcap"></p>
+      </section>
+      <div class="stepnav"><span></span><button class="btn light" type="button" data-go="2">Ďalší krok →</button></div>
+    </div>
+  </div>
+</section>
 
-    <section id="s2">
-      <h2>Vzdialenosť odvodňovačov</h2>
-      <p class="lead">Z hltnosti jedného odvodňovača a prítoku z odvodňovanej plochy mosta.</p>
-      <div class="kpis" id="kpi2"></div>
-      <div class="figs">
-        <figure class="wide">
-          <p class="figtitle">Vzdialenosť odvodňovačov podľa pozdĺžneho sklonu</p>
-          <div class="chartbox" id="senschart"></div>
-          <figcaption id="senscap"></figcaption>
-        </figure>
+<!-- KROK 2 -->
+<section class="view wrap hidden" data-view="2" aria-labelledby="h1-2">
+  <div class="layout">
+    <aside class="panel params" aria-label="Parametre – odvodňovaná plocha">
+      <div class="phead"><h2>Parametre</h2><span>zadaj presné hodnoty</span></div>
+      <div class="carried" id="carry2"></div>
+      <div id="params2"></div>
+    </aside>
+    <div class="content">
+      <div class="stephead">
+        <div class="shtext">
+          <div class="eyebrow">Krok 2 / 4</div>
+          <h1 id="h1-2">Vzdialenosť odvodňovačov</h1>
+          <p class="lead">Koľko odvodňovačov treba v línii a v akom rozostupe, aby každý stihol zachytiť vodu zo svojho úseku mosta.</p>
+        </div>
+        <div class="result" id="res2" aria-live="polite"></div>
       </div>
-      <div class="tablewrap"><table id="t2"></table></div>
-    </section>
+      <div class="tiles" id="tiles2"></div>
+      <section class="panel calc">
+        <button class="calctoggle" type="button" aria-expanded="true" aria-controls="calc2"><span><b>Postup výpočtu</b><span class="sub" id="calc2n"></span></span><span class="chev" aria-hidden="true"></span></button>
+        <div class="calcbody" id="calc2"></div>
+      </section>
+      <section class="panel viz">
+        <div class="vizhead"><b>Pôdorys línie odvodňovačov</b><span class="muted mono" id="plancap"></span></div>
+        <div id="plan"></div>
+      </section>
+      <section class="panel viz">
+        <div class="vizhead"><b>Vzdialenosť odvodňovačov podľa pozdĺžneho sklonu</b></div>
+        <div class="chartbox" id="senschart"></div>
+        <p class="cap" id="senscap"></p>
+      </section>
+      <div class="stepnav"><button class="btn ghost" type="button" data-go="1">← Späť</button><button class="btn light" type="button" data-go="3">Ďalší krok →</button></div>
+    </div>
+  </div>
+</section>
 
-    <section id="s3">
-      <h2>Zberné potrubie</h2>
-      <p class="lead">Kapacita potrubia pri zvolenom plnení (Manning–Chézy) porovnaná s celkovým prítokom z mosta Q<sub>M</sub>.</p>
-      <div class="figs">
-        <figure class="wide">
-          <p class="figtitle">Prietok potrubím podľa plnenia</p>
-          <div class="chartbox" id="pipechart"></div>
-          <figcaption id="pipecap"></figcaption>
-        </figure>
+<!-- KROK 3 -->
+<section class="view wrap hidden" data-view="3" aria-labelledby="h1-3">
+  <div class="layout">
+    <aside class="panel params" aria-label="Parametre – zberné potrubie">
+      <div class="phead"><h2>Parametre</h2><span>zadaj presné hodnoty</span></div>
+      <div class="carried" id="carry3"></div>
+      <div id="params3"></div>
+    </aside>
+    <div class="content">
+      <div class="stephead">
+        <div class="shtext">
+          <div class="eyebrow">Krok 3 / 4</div>
+          <h1 id="h1-3">Zberné potrubie</h1>
+          <p class="lead">Zvládne potrubie odviesť všetku vodu z mosta? Kapacita pri zvolenom plnení (Manning–Chézy) v porovnaní s prítokom.</p>
+        </div>
+        <div class="result" id="res3" aria-live="polite"></div>
       </div>
-      <div class="tablewrap"><table id="t3"></table></div>
-    </section>
-    <p class="note">Grafy hltnosti pre odvodňovače 300 × 300, 500 × 300 a 500 × 500 sú zdigitalizované z podkladov vo výpočtovom liste, presnosť odčítania je približne ±0,5 mm. Výsledky slúžia ako podklad pre návrh, za posúdenie zodpovedá projektant.</p>
-  </main>
-</div>
+      <div class="tiles" id="tiles3"></div>
+      <section class="panel calc">
+        <button class="calctoggle" type="button" aria-expanded="true" aria-controls="calc3"><span><b>Postup výpočtu</b><span class="sub" id="calc3n"></span></span><span class="chev" aria-hidden="true"></span></button>
+        <div class="calcbody" id="calc3"></div>
+      </section>
+      <section class="panel viz">
+        <div class="vizhead"><b id="pvtitle">Prierez a kapacita potrubia</b></div>
+        <div class="pipeviz">
+          <svg width="200" height="200" viewBox="0 0 200 200" role="img" id="pvsvg" aria-label="Plnenie potrubia">
+            <defs><clipPath id="pipeclip"><circle cx="100" cy="100" r="82"/></clipPath></defs>
+            <circle cx="100" cy="100" r="82" class="pv-bg"/>
+            <g clip-path="url(#pipeclip)"><g class="move" id="pvwater"><rect x="18" y="0" width="164" height="200" class="pv-water"/><line class="flow" x1="18" x2="182" y1="20" y2="20"/></g></g>
+            <circle cx="100" cy="100" r="82" class="pv-ring"/>
+            <text x="100" y="56" text-anchor="middle" class="pv-txt" id="pvtxt"></text>
+          </svg>
+          <div class="bars">
+            <div><div class="barlab"><span>Prítok z mosta Q<sub>M</sub></span><b id="pvqm"></b></div><div class="bartrack"><div class="bar qm" id="pvqmbar"></div></div></div>
+            <div><div class="barlab"><span>Kapacita potrubia Q<sub>pot</sub></span><b id="pvqp"></b></div><div class="bartrack"><div class="bar qp" id="pvqpbar"></div></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="panel viz">
+        <div class="vizhead"><b>Prietok potrubím podľa plnenia</b></div>
+        <div class="chartbox" id="pipechart"></div>
+        <p class="cap" id="pipecap"></p>
+      </section>
+      <div class="stepnav"><button class="btn ghost" type="button" data-go="2">← Späť</button><button class="btn light" type="button" data-go="4">Protokol →</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- KROK 4 -->
+<section class="view wrap hidden" data-view="4" aria-labelledby="h1-4">
+  <div class="stephead">
+    <div class="shtext">
+      <div class="eyebrow">Krok 4 / 4</div>
+      <h1 id="h1-4">Protokol</h1>
+      <p class="lead">Jedna strana A4 so všetkými vstupmi, výpočtami a posúdeniami, pripravená ako posledná príloha technickej správy.</p>
+    </div>
+    <div class="protoact">
+      <button class="btn ghost" type="button" data-go="3">← Späť</button>
+      <button class="btn ghost" id="copy" type="button">Kopírovať do Excelu</button>
+      <button class="btn accent" id="print" type="button">Tlačiť / uložiť PDF</button>
+    </div>
+  </div>
+  <div class="panel protometa">
+    <div class="field"><label for="m-stavba">Stavba</label><div class="inbox"><input id="m-stavba" autocomplete="off" placeholder="názov stavby"></div></div>
+    <div class="field"><label for="m-objekt">Objekt</label><div class="inbox"><input id="m-objekt" autocomplete="off" placeholder="SO / most"></div></div>
+    <div class="field"><label for="m-autor">Vypracoval</label><div class="inbox"><input id="m-autor" autocomplete="off" placeholder="meno projektanta"></div></div>
+  </div>
+  <div class="paperwrap"><div class="sheet" id="sheet"></div></div>
+</section>
+
 <div class="toast" id="toast" role="status"></div>
-
 <script src="script.js"></script>
 </body>
 </html>

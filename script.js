@@ -56,37 +56,6 @@ function niceStep(range, n){ const raw = range/n, mag = Math.pow(10, Math.floor(
 function niceMax(x, n){ const st = niceStep(x, n); return {max: Math.ceil(x/st)*st, step: st}; }
 function range(a, b, st){ const out=[]; for (let v=a; v<=b+st*1e-6; v+=st) out.push(+v.toFixed(10)); return out; }
 
-/* ---------- inputs ---------- */
-function buildInputs(){
-  let html = "";
-  GROUPS.forEach(g => {
-    html += `<fieldset><legend>${g.title}</legend>`;
-    g.fields.forEach(f => {
-      if (f.type === "select"){
-        html += `<div class="field full"><label for="f-typ">Typ odvodňovača</label><select id="f-typ">${Object.entries(GRATES).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join("")}</select><div class="hint" id="typinfo"></div></div>`;
-      } else {
-        html += `<div class="field${f.customOnly?" customonly":""}"><label for="f-${f.id}">${f.name}<span class="sym">${f.sym}</span></label><input id="f-${f.id}" inputmode="decimal" autocomplete="off" spellcheck="false"><span class="unit">${f.unit}</span>${f.hint?`<div class="hint">${f.hint}</div>`:""}</div>`;
-      }
-    });
-    html += `</fieldset>`;
-  });
-  $("inputs").innerHTML = html;
-  fillInputs();
-  $("f-typ").addEventListener("change", e => {
-    state.typ = e.target.value;
-    const g = GRATES[state.typ];
-    if (g.a){ state.a = g.a; $("f-a").value = g.a; }
-    update();
-  });
-  GROUPS.flatMap(g=>g.fields).filter(f=>f.type!=="select").forEach(f => {
-    $("f-"+f.id).addEventListener("input", e => { state[f.id] = e.target.value; update(); });
-  });
-}
-function fillInputs(){
-  $("f-typ").value = state.typ;
-  GROUPS.flatMap(g=>g.fields).filter(f=>f.type!=="select").forEach(f => { $("f-"+f.id).value = state[f.id]; });
-}
-
 /* ---------- calculation ---------- */
 function readParams(){
   const p = {typ: state.typ}; const bad = [];
@@ -390,7 +359,7 @@ function remedies(p, r){
     if (rk.okH && rk.okV) out.push(`<b>Použiť ${GRATES[k].label.toLowerCase()}</b> (a = ${GRATES[k].a} m). Pri v′ = ${nf(rk.vs,2)} m/s pohltí vodu do h<sub>max</sub> = ${nf(rk.hmax,1)} mm, H<sub>od</sub> = ${nf(rk.Hod,2)} l/s, L<sub>odv</sub> = ${nf(rk.Lodv,2)} m.`);
   });
   if (!r.okV) out.push(`<b>Overiť hltnosť u výrobcu.</b> Graf končí pri v′ = ${nf(r.vlim,1)} m/s, pre vyššiu rýchlosť výpočet nemá podklad.`);
-  if (p.ppd > 0) out.push(`Pri moste s premenlivým sklonom posúď úseky s najväčším sklonom samostatne. Graf vzdialenosti podľa pozdĺžneho sklonu nižšie ukazuje, od akého sklonu odvodňovač prestáva vyhovovať.`);
+  if (p.ppd > 0) out.push(`Pri moste s premenlivým sklonom posúď úseky s najväčším sklonom samostatne. Graf vzdialenosti podľa pozdĺžneho sklonu v kroku 2 ukazuje, od akého sklonu odvodňovač prestáva vyhovovať.`);
   return out;
 }
 function failText(){
@@ -463,21 +432,6 @@ function setupAnim(){
   requestAnimationFrame(animLoop);
 }
 
-/* ---------- renderers ---------- */
-function renderVerdicts(p, r){
-  const g = GRATES[p.typ];
-  const items = [
-    {lab:"Výška vody v osi odvodňovača h<sub>1</sub>", big:`${nf(r.h1*1000,1)} ≤ ${nf(r.hmax,1)} mm`, ok:r.okH, st: r.okH ? (r.slot ? `Vyhovuje, pretekané štrbiny: ${r.slot}` : "Vyhovuje") : "Nevyhovuje, voda pretečie cez odvodňovač"},
-    {lab:"Rýchlosť vody na povrchu v′", big: r.vlim ? `${nf(r.vs,2)} ≤ ${nf(r.vlim,1)} m/s` : `${nf(r.vs,2)} m/s`, ok:r.okV, st: r.vlim ? (r.okV ? "V rozsahu grafu hltnosti" : "Mimo rozsahu grafu, over u výrobcu") : "Rozsah over v podkladoch výrobcu"},
-    {lab:"Vzdialenosť odvodňovačov L<sub>odv</sub>", big:`${nf(r.Lodv,2)} m`, ok:r.okH && r.okV, st:`min. ${r.nodv} ks v línii${p.lines>1?`, spolu ${r.ntot} ks`:""}`},
-    {lab:"Kapacita zberného potrubia", big:`${nf(r.Qp,1)} ≥ ${nf(r.QM,1)} l/s`, ok:r.okP, st: r.okP ? "Vyhovuje" : "Nevyhovuje"}
-  ];
-  if (!r.okP) items[3].big = `${nf(r.Qp,1)} < ${nf(r.QM,1)} l/s`;
-  if (!r.okH) items[0].big = `${nf(r.h1*1000,1)} > ${nf(r.hmax,1)} mm`;
-  if (!r.okV && r.vlim) items[1].big = `${nf(r.vs,2)} > ${nf(r.vlim,1)} m/s`;
-  $("verdicts").innerHTML = items.map(it => `<div class="verdict ${it.ok?"ok":"bad"}"><div class="lab">${it.lab}</div><div class="big">${it.big}</div><div class="st">${it.st}</div></div>`).join("");
-}
-
 function renderCross(p, r){
   const W = 720, H = 322, curbX = 556, left = 30;
   const dMax = p.B*1.14;
@@ -543,52 +497,6 @@ function renderCross(p, r){
   $("crosscap").innerHTML = `Voda sa rozlieva do šírky <b>B = ${nf(p.B,2)} m</b> od obrubníka. Odvodňovač zachytí vodu zo spolupôsobiacej šírky <b>a₁ = ${nf(r.a1,3)} m</b>, čo je <b>${nf(r.Hod,2)} l/s</b> z celkového prietoku v rigole ${nf(r.Q,2)} l/s.`;
 }
 
-function renderCapacity(p, r){
-  const g = GRATES[p.typ];
-  if (!g.curves){
-    $("captitle").textContent = "Graf hltnosti";
-    $("capchart").innerHTML = `<p class="note" style="margin:8px 4px">Pre zvolený typ nie je graf k dispozícii. Porovnávam h₁ = ${nf(r.h1*1000,1)} mm s ručne zadanou hodnotou h<sub>max</sub> = ${nf(r.hmax,1)} mm.</p>`;
-    $("capcap").innerHTML = "";
-    return;
-  }
-  $("captitle").textContent = `Graf hltnosti – ${g.label.toLowerCase()}`;
-  const top = g.curves[g.curves.length-1];
-  const ymaxRaw = Math.max(top[0][1], r.h1*1000) + 4;
-  const ym = Math.ceil(ymaxRaw/10)*10;
-  const W = 720, H = 440;
-  const F = frame({W,H,ml:52,mr:64,mt:14,mb:46,x0:0,x1:g.vlim,y0:0,y1:ym,
-    xt: range(0, g.vlim, g.vlim > 1 ? 0.25 : 0.1), yt: range(0, ym, ym > 60 ? 10 : 5),
-    fx: v => String(+v.toFixed(3)).replace(".", ","), fy: v => nf(v,0),
-    xl:"Povrchová rýchlosť vody na prítoku k mriežke v′ [m/s]", yl:"Výška vody na prítoku k mriežke h₁ [mm]"});
-  const {sx, sy} = F;
-  let s = "";
-  const ov = [[0, ym], [0, top[0][1]], ...top, [g.vlim, ym]];
-  s += `<path class="ovf" d="${pathOf(ov, sx, sy)}Z"/>`;
-  s += F.s;
-  s += `<text class="ovftxt" x="${sx(g.vlim*0.70)}" y="${sy(ym*0.88)}" text-anchor="middle">oblasť pretoku</text>`;
-  g.curves.forEach((c, i) => {
-    const isTop = i === g.curves.length-1;
-    s += `<path class="curve${isTop?" top":""}" d="${pathOf(c, sx, sy)}"/>`;
-    const lp = c[c.length-1];
-    s += `<text class="slot" x="${sx(lp[0])+7}" y="${sy(lp[1])+4}">${g.slots[i]}</text>`;
-  });
-  s += `<text class="slot" x="${W-4}" y="${sy(top[top.length-1][1]) - 30}" text-anchor="end">počet</text><text class="slot" x="${W-4}" y="${sy(top[top.length-1][1]) - 16}" text-anchor="end">štrbín</text>`;
-  // operating point
-  const vx = Math.min(r.vs, g.vlim), hy = r.h1*1000;
-  const ok = r.okH && r.okV;
-  s += `<line class="guide" x1="${sx(vx)}" x2="${sx(vx)}" y1="${sy(Math.max(hy, r.hmax))}" y2="${sy(0)}"/>`;
-  s += `<line class="guide" x1="${sx(0)}" x2="${sx(vx)}" y1="${sy(hy)}" y2="${sy(hy)}"/>`;
-  s += `<rect class="mark" x="${sx(vx)-5}" y="${sy(r.hmax)-5}" width="10" height="10" transform="rotate(45 ${sx(vx)} ${sy(r.hmax)})"/>`;
-  const tx = sx(vx) + (vx > g.vlim*0.6 ? -12 : 12), anchor = vx > g.vlim*0.6 ? "end" : "start";
-  s += `<text class="ann" x="${tx}" y="${sy(r.hmax)-10}" text-anchor="${anchor}">${sb("h","max",` = ${nf(r.hmax,1)} mm`)}</text>`;
-  s += `<circle class="${ok?"pt-ok":"pt-bad"}" cx="${sx(vx)}" cy="${sy(hy)}" r="7"/>`;
-  s += `<text class="ann ${ok?"ann-ok":"ann-bad"}" x="${tx}" y="${sy(hy)+(hy < r.hmax - 6 ? 18 : 22)}" text-anchor="${anchor}">h₁ = ${nf(hy,1)} mm, v′ = ${nf(r.vs,2)} m/s${r.okV?"":" (mimo grafu)"}</text>`;
-  $("capchart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Graf hltnosti odvodňovača s vyznačeným bodom">${s}</svg>`;
-  const reserve = r.hmax - hy;
-  $("capcap").innerHTML = r.okH
-    ? `Bod leží pod hraničnou krivkou, rezerva <b>${nf(reserve,1)} mm</b> (${nf(reserve/r.hmax*100,0)} %). ${r.slot?`Počet pretekaných štrbín mriežky: ${r.slot}.`:""} ${g.info}`
-    : `Bod leží v oblasti pretoku, h₁ prekračuje h<sub>max</sub> o <b>${nf(-reserve,1)} mm</b>. Zmenši šírku rozliatia B, posuň odvodňovač bližšie k obrubníku alebo zvoľ väčší typ. ${g.info}`;
-}
 
 function renderSens(p, r){
   const xmax = Math.max(6, Math.ceil(p.ppd*1.3));
@@ -653,79 +561,345 @@ function renderPipe(p, r){
     : `Potrubie DN ${nf(p.dpot*1000,0)} pri sklone ${nf(p.ipot,2)} % neprevedie Q<sub>M</sub> ani pri plnom profile. Zväčši priemer alebo sklon.`;
 }
 
-let lastRows = [];
-function table(id, rows){
-  $(id).innerHTML = `<thead><tr><th>Značka</th><th>Veličina</th><th style="text-align:right">Hodnota</th><th>Jednotka</th><th>Vzťah</th></tr></thead><tbody>` +
-    rows.map(r => `<tr class="${r.cls||""}"><td class="sym">${r[0]}</td><td>${r[1]}</td><td class="val">${typeof r[2]==="string"?r[2]:nf(r[2],r[4])}</td><td class="unit">${r[3]}</td><td class="f">${r[5]||""}</td></tr>`).join("") + `</tbody>`;
+
+/* ---------- step navigation ---------- */
+const SHORT = {g300:"300 × 300", g500x300:"500 × 300", g500:"500 × 500", custom:"iný typ"};
+let step = 1;
+function goStep(n){
+  step = n;
+  document.querySelectorAll(".view").forEach(v => v.classList.toggle("hidden", +v.dataset.view !== n));
+  document.querySelectorAll(".steps button").forEach(b => b.setAttribute("aria-current", +b.dataset.step === n ? "step" : "false"));
+  if (n === 1 && anim.realP){ animResize(); anim.key = ""; animUpdate(anim.realP, anim.realR); drawAnim(); }
+  window.scrollTo({top: 0, behavior: reduceMotion ? "auto" : "smooth"});
 }
-function renderTables(p, r){
-  const k = (row, cls) => { row.cls = cls; return row; };
-  const t1 = [
-    ["h","Výška vody pri obrubníku",r.h*1000,"mm",1,"h = B · P<sub>pr</sub>"],
-    ["A","Plocha vody v rigole",r.A,"m²",5,"A = 0,5 · B · h"],
-    ["O","Omočený obvod",r.O,"m",3,"O = B + h"],
-    ["R","Hydraulický polomer",r.R,"m",5,"R = A / O"],
-    ["C","Rýchlostný súčiniteľ",r.C,"m<sup>0,5</sup>/s",2,"C = R<sup>1/6</sup> / n"],
-    ["v","Rýchlosť na vtoku",r.v,"m/s",3,"v = C · R<sup>1/2</sup> · P<sub>pd</sub><sup>1/2</sup>"],
-    ["Q","Prietok v rigole",r.Q,"l/s",2,"Q = A · v · 1000"],
-    k(["v′","Rýchlosť vody na povrchu",r.vs,"m/s",3,"v′ = 1,15 · v" + (r.vlim?` ≤ ${nf(r.vlim,1)}`:"")], r.okV?"okrow":"badrow"),
-    ["h′<sub>1</sub>","Výška vody v osi odvodňovača",r.h1*1000,"mm",1,"h′<sub>1</sub> = (B − b<sub>obr</sub> − a/2) · P<sub>pr</sub>"],
-    k(["h<sub>max</sub>","Max. výška vody (graf hltnosti)",r.hmax,"mm",1, GRATES[p.typ].curves ? "odčítané z grafu pre v′" : "zadané ručne"], ""),
-    k(["h<sub>1</sub> ≤ h<sub>max</sub>","Posúdenie", r.okH ? "Vyhovuje" : "Nevyhovuje","","",""], r.okH?"okrow":"badrow"),
-    ["k","Súčiniteľ bočného nátoku",r.k,"",3,"k = 5 / v"],
-    ["k · h<sub>1</sub>","Priľahlá šírka",r.kh1,"m",3,""],
-    ["a<sub>1</sub>","Spolupôsobiaca šírka",r.a1,"m",3,"a<sub>1</sub> = k·h<sub>1</sub> + a + min(b<sub>obr</sub>; k·h<sub>1</sub>)"],
-    ["ø h′<sub>1</sub>","Priemerná výška vody",r.hp*1000,"mm",1,"ø h′<sub>1</sub> = (B − a<sub>1</sub>/2) · P<sub>pr</sub>"],
-    ["A<sub>1</sub>","Plocha vody pritekajúcej k odvodňovaču",r.A1,"m²",5,"A<sub>1</sub> = a<sub>1</sub> · ø h′<sub>1</sub>"],
-    k(["H<sub>od</sub>","Hltnosť odvodňovača",r.Hod,"l/s",2,"H<sub>od</sub> = A<sub>1</sub> · v · 1000"], "key")
-  ];
-  const t2 = [
-    ["F<sub>m</sub>","Odvodňovaná plocha mosta",r.Fm,"m²",2,"F<sub>m</sub> = š · l"],
-    ["Q<sub>M</sub>","Množstvo odvádzanej vody",r.QM,"l/s",2,"Q<sub>M</sub> = F<sub>m</sub> · q · φ"]
-  ];
-  if (p.lines > 1) t2.push(["š<sub>l</sub>","Šírka pripadajúca na jednu líniu",r.swl,"m",2,"š<sub>l</sub> = š / n<sub>l</sub>"]);
-  t2.push(k(["L<sub>odv</sub>","Vzdialenosť odvodňovačov",r.Lodv,"m",2, p.lines>1 ? "L<sub>odv</sub> = H<sub>od</sub> / (q · š<sub>l</sub> · φ · s)" : "L<sub>odv</sub> = H<sub>od</sub> / (q · š · φ · s)"], "key"));
-  t2.push(["n","Min. počet odvodňovačov v línii",String(r.nodv),"ks","","n = ⌈l / L<sub>odv</sub>⌉"]);
-  t2.push(["L","Rovnomerná vzdialenosť pri n kusoch",r.Lreal,"m",2,"L = l / n"]);
-  if (p.lines > 1) t2.push(["n<sub>c</sub>","Počet odvodňovačov spolu",String(r.ntot),"ks","","n<sub>c</sub> = n · n<sub>l</sub>"]);
-  const t3 = [
-    ["α","Stredový uhol zaplnenia",r.theta,"°",1,"α = 2 · arccos(1 − 2·h/d)"],
-    ["S<sub>pot</sub>","Prietoková plocha",r.Sp,"m²",5,"S<sub>pot</sub> = r²/2 · (α − sin α)"],
-    ["O<sub>pot</sub>","Omočený obvod",r.Op,"m",4,"O<sub>pot</sub> = r · α"],
-    ["R<sub>pot</sub>","Hydraulický polomer",r.Rp,"m",5,"R<sub>pot</sub> = S<sub>pot</sub> / O<sub>pot</sub>"],
-    ["c","Rýchlostný súčiniteľ",r.cp,"m<sup>0,5</sup>/s",2,"c = (1/n) · R<sub>pot</sub><sup>1/6</sup>"],
-    ["v<sub>pot</sub>","Stredná profilová rýchlosť",r.vp,"m/s",3,"v<sub>pot</sub> = c · (R<sub>pot</sub> · i<sub>pot</sub>)<sup>1/2</sup>"],
-    k(["Q<sub>pot</sub>","Objemový prietok potrubia",r.Qp,"l/s",2,"Q<sub>pot</sub> = S<sub>pot</sub> · v<sub>pot</sub> · 1000"], "key"),
-    k(["Q<sub>pot</sub> ≥ Q<sub>M</sub>","Posúdenie potrubia", r.okP ? "Vyhovuje" : "Nevyhovuje","","",`${nf(r.Qp,2)} ${r.okP?"≥":"<"} ${nf(r.QM,2)} l/s`], r.okP?"okrow":"badrow")
-  ];
-  table("t1", t1); table("t2", t2); table("t3", t3);
+document.querySelectorAll(".steps button").forEach(b => b.addEventListener("click", () => goStep(+b.dataset.step)));
+document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => goStep(+b.dataset.go)));
+document.querySelectorAll(".calctoggle").forEach(b => b.addEventListener("click", () => {
+  const open = b.getAttribute("aria-expanded") !== "true";
+  b.setAttribute("aria-expanded", open ? "true" : "false");
+  $(b.getAttribute("aria-controls")).hidden = !open;
+}));
+
+/* ---------- inputs ---------- */
+function buildInputs(){
+  GROUPS.forEach((g, gi) => {
+    let html = "";
+    g.fields.forEach(f => {
+      if (f.type === "select"){
+        html += `<div class="field"><span class="flabel" id="typ-lab">Typ odvodňovača</span><div class="grates" role="group" aria-labelledby="typ-lab">${Object.keys(GRATES).map(k => `<button type="button" data-typ="${k}" aria-pressed="false">${SHORT[k]}</button>`).join("")}</div><div class="hint" id="typinfo"></div></div>`;
+      } else {
+        html += `<div class="field${f.customOnly ? " customonly" : ""}"><div class="row"><label for="f-${f.id}">${f.name} <b>${f.sym}</b></label><div class="inbox" id="box-${f.id}"><input id="f-${f.id}" inputmode="decimal" autocomplete="off" spellcheck="false"><span class="unit">${f.unit}</span></div></div>${f.hint ? `<div class="hint">${f.hint}</div>` : ""}</div>`;
+      }
+    });
+    $("params" + (gi + 1)).innerHTML = html;
+  });
+  document.querySelectorAll(".grates button").forEach(b => b.addEventListener("click", () => {
+    state.typ = b.dataset.typ;
+    const g = GRATES[state.typ];
+    if (g.a){ state.a = g.a; $("f-a").value = g.a; }
+    update();
+  }));
+  GROUPS.flatMap(g => g.fields).filter(f => f.type !== "select").forEach(f => {
+    $("f-" + f.id).addEventListener("input", e => { state[f.id] = e.target.value; update(); });
+  });
+  [["m-stavba","stavba"],["m-objekt","objekt"],["m-autor","autor"]].forEach(([id, k]) => {
+    $(id).addEventListener("input", e => { state[k] = e.target.value; update(); });
+  });
+  fillInputs();
+}
+function fillInputs(){
+  GROUPS.flatMap(g => g.fields).filter(f => f.type !== "select").forEach(f => { $("f-" + f.id).value = state[f.id]; });
+  $("m-stavba").value = state.stavba || ""; $("m-objekt").value = state.objekt || ""; $("m-autor").value = state.autor || "";
+}
+
+/* ---------- small builders ---------- */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const RC = 2*Math.PI*26;
+function tile(t){
+  let g = "";
+  if (t.gauge != null){
+    const u = Number.isFinite(t.gauge) ? Math.max(0, t.gauge) : 0;
+    const col = u > 1 + 1e-9 ? "var(--bad)" : u > 0.9 ? "var(--warn)" : "var(--ok)";
+    g = `<svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true"><circle class="ring-bg" cx="32" cy="32" r="26"/><circle class="ring" cx="32" cy="32" r="26" stroke="${col}" stroke-dasharray="${(Math.min(1,u)*RC).toFixed(1)} ${RC.toFixed(1)}" transform="rotate(-90 32 32)"/><text class="ring-t" x="32" y="36.5" text-anchor="middle">${nf(u*100,0)}%</text></svg>`;
+  }
+  return `<div class="tile">${g}<div><div class="tl">${t.label}</div><div class="tv">${t.value} <small>${t.unit || ""}</small></div>${t.note ? `<div class="tn ${t.kind || ""}">${t.note}</div>` : ""}</div></div>`;
+}
+function result(label, value, unit, kind){
+  const st = kind === "ok" ? "Vyhovuje" : kind === "bad" ? "Nevyhovuje" : "Návrh";
+  return `<span class="rl">${label}</span><span class="rv"><b>${value}</b><span>${unit}</span></span><span class="status ${kind}">${st}</span>`;
+}
+function calcGroups(groups){
+  return groups.map(g => `<div class="cgroup"><h3>${g.title}</h3>${g.rows.map(r => {
+    const v = typeof r[2] === "string" ? r[2] : nf(r[2], r[4]);
+    return `<div class="crow ${r.cls || ""}"><span><span class="cn">${r[1]}</span><span class="cf">${r[5] || `<b>${r[0]}</b>`}</span></span><span class="val">${v} <small>${r[3]}</small></span></div>`;
+  }).join("")}</div>`).join("");
+}
+const segs = (q, f) => { let s = ""; for (let i = 0; i < q.length - 1; i++){ const a = q[i-1] || q[i], b = q[i], c = q[i+1], d = q[i+2] || c; s += ` C${f(b[0]+(c[0]-a[0])/6)} ${f(b[1]+(c[1]-a[1])/6)} ${f(c[0]-(d[0]-b[0])/6)} ${f(c[1]-(d[1]-b[1])/6)} ${f(c[0])} ${f(c[1])}`; } return s; };
+
+/* ---------- capacity chart with live point ---------- */
+const cap = {key: ""};
+function renderCapacity(p, r){
   const g = GRATES[p.typ];
-  $("kpi2").innerHTML = [
-    ["Hltnosť jedného odvodňovača", nf(r.Hod,2), "l/s"],
-    ["Prítok z mosta Q<sub>M</sub>", nf(r.QM,2), "l/s"],
-    ["Vzdialenosť L<sub>odv</sub>", nf(r.Lodv,2), "m"],
-    [p.lines>1 ? "Počet odvodňovačov spolu" : "Min. počet odvodňovačov", String(p.lines>1 ? r.ntot : r.nodv), "ks"]
-  ].map(x => `<div class="kpi"><div class="lab">${x[0]}</div><div class="big">${x[1]}<small>${x[2]}</small></div></div>`).join("");
-  // protocol
+  $("captitle").textContent = g.curves ? `Graf hltnosti · ${g.label.toLowerCase()}` : "Graf hltnosti";
+  if (!g.curves){
+    cap.key = "";
+    $("capchart").innerHTML = `<p class="note">Pre zvolený typ nie je graf k dispozícii. Porovnávam h₁ = ${nf(r.h1*1000,1)} mm s ručne zadanou hodnotou h<sub>max</sub> = ${nf(r.hmax,1)} mm.</p>`;
+    $("capcap").innerHTML = "";
+    return;
+  }
+  const top = g.curves[g.curves.length-1], n = g.curves.length;
+  const ym = Math.ceil((Math.max(top[0][1], r.h1*1000) + 5)/10)*10;
+  const W = 820, H = 450, x0 = 58, x1 = W - 64, y0 = H - 74, y1 = 18;
+  const sx = v => x0 + v/g.vlim*(x1 - x0), sy = h => y0 - h/ym*(y0 - y1), f = v => v.toFixed(1);
+  const key = p.typ + "|" + ym;
+  if (key !== cap.key){
+    cap.key = key;
+    const P = c => c.map(q => [sx(q[0]), sy(q[1])]);
+    const qt = P(top), last = qt[qt.length-1];
+    const topD = `M${f(x0)} ${f(qt[0][1])} L${f(qt[0][0])} ${f(qt[0][1])}` + segs(qt, f);
+    let s = `<path class="ovf" d="M${f(x0)} ${f(y1)} L${f(x0)} ${f(qt[0][1])} L${f(qt[0][0])} ${f(qt[0][1])}${segs(qt, f)} L${f(x1)} ${f(y1)} Z"/>`;
+    s += `<path class="under" d="${topD} L${f(last[0])} ${f(y0)} L${f(x0)} ${f(y0)} Z"/>`;
+    const ys = ym > 60 ? 10 : 5, xs = g.vlim > 1 ? 0.25 : 0.1;
+    range(0, ym, ys).forEach(h => s += `<line class="grid" x1="${x0}" x2="${x1}" y1="${f(sy(h))}" y2="${f(sy(h))}"/><text class="tick" x="${x0-10}" y="${f(sy(h)+4)}" text-anchor="end">${h}</text>`);
+    range(0, g.vlim, xs).forEach(v => s += `<line class="grid" x1="${f(sx(v))}" x2="${f(sx(v))}" y1="${y1}" y2="${y0}"/><text class="tick" x="${f(sx(v))}" y="${f(y0+46)}" text-anchor="middle">${nf(v, xs < 0.25 ? 1 : 2)}</text>`);
+    s += `<text class="ovftxt" x="${f(sx(g.vlim*0.74))}" y="${f(y1+28)}" text-anchor="middle">PRETOK</text>`;
+    const ends = g.curves.map((c, i) => ({i, y: sy(c[c.length-1][1])})).sort((a, b) => b.y - a.y);
+    let prev = Infinity; const ly = {};
+    ends.forEach(o => { ly[o.i] = Math.min(o.y, prev - 14); prev = ly[o.i]; });
+    g.curves.slice(0, n-1).forEach((c, i) => {
+      const q = P(c), e = q[q.length-1];
+      s += `<path class="curve" d="M${f(q[0][0])} ${f(q[0][1])}${segs(q, f)}"/><text class="slot" x="${f(e[0]+8)}" y="${f(ly[i]+4)}">${g.slots[i]}</text>`;
+    });
+    s += `<path class="curve glow" d="${topD}"/><path class="curve top" d="${topD}"/><text class="slot top" x="${f(last[0]+8)}" y="${f(ly[n-1]+4)}">${g.slots[n-1]}</text>`;
+    s += `<text class="slothead" x="${f(x1+6)}" y="${f(Math.min(...Object.values(ly)) - 14)}">štrbiny</text>`;
+    s += `<g class="move" id="cp-h"><line class="cp-cross" x1="${x0}" x2="${x1}" y1="0" y2="0"/><rect class="cp-tag" x="${x0-54}" y="-11" width="50" height="22" rx="6"/><text class="cp-tagtxt" id="cp-ht" x="${x0-29}" y="4.5" text-anchor="middle"></text></g>`;
+    s += `<g class="move" id="cp-v"><line class="cp-cross" x1="0" x2="0" y1="${y1}" y2="${y0}"/><rect class="cp-tag" x="-30" y="${y0+6}" width="60" height="22" rx="6"/><text class="cp-tagtxt" id="cp-vt" x="0" y="${y0+21.5}" text-anchor="middle"></text></g>`;
+    s += `<g class="move" id="cp-m"><rect class="mark" x="-6" y="-6" width="12" height="12" transform="rotate(45)"/><text class="cp-hlab" id="cp-mt" y="-12"></text></g>`;
+    s += `<g class="move" id="cp-p"><circle class="cp-pulse" r="7"/><circle class="cp-dot" r="7"/><text class="cp-lab" id="cp-pt" y="24"></text></g>`;
+    s += `<text class="axlab" x="${f((x0+x1)/2)}" y="${f(y0+68)}" text-anchor="middle">povrchová rýchlosť vody na prítoku v′ [m/s]</text>`;
+    s += `<text class="axlab" transform="translate(14 ${f((y0+y1)/2)}) rotate(-90)" text-anchor="middle">výška vody v osi mriežky h′₁ [mm]</text>`;
+    $("capchart").innerHTML = `<svg id="capsvg" viewBox="0 0 ${W} ${H}" role="img">${s}</svg>`;
+  }
+  const vx = Math.min(r.vs, g.vlim), hh = r.h1*1000;
+  const ok = r.okH && r.okV, util = hh/r.hmax;
+  const col = !ok ? "var(--bad)" : util > 0.9 ? "var(--warn)" : "var(--ok)";
+  const px = sx(vx), py = sy(hh), hy = sy(r.hmax), right = vx > g.vlim*0.6, diff = r.hmax - hh;
+  const svg = $("capsvg");
+  svg.style.setProperty("--pt", col);
+  svg.setAttribute("aria-label", `Graf hltnosti: h′₁ ${nf(hh,1)} mm pri v′ ${nf(r.vs,2)} m/s, hranica h max ${nf(r.hmax,1)} mm`);
+  $("cp-h").style.transform = `translate(0px, ${f(py)}px)`;
+  $("cp-v").style.transform = `translate(${f(px)}px, 0px)`;
+  $("cp-m").style.transform = `translate(${f(px)}px, ${f(hy)}px)`;
+  $("cp-p").style.transform = `translate(${f(px)}px, ${f(py)}px)`;
+  $("cp-ht").textContent = nf(hh,1);
+  $("cp-vt").textContent = nf(vx,2);
+  [["cp-mt", `h max ${nf(r.hmax,1)} mm`], ["cp-pt", (diff >= 0 ? "rezerva " : "prekročenie ") + nf(Math.abs(diff),1) + " mm"]].forEach(([id, t]) => {
+    const el = $(id); el.textContent = t; el.setAttribute("x", right ? -14 : 14); el.setAttribute("text-anchor", right ? "end" : "start");
+  });
+  $("capcap").innerHTML = r.okH
+    ? `Bod leží pod hraničnou krivkou, rezerva <b>${nf(diff,1)} mm</b> (${nf(diff/r.hmax*100,0)} %). ${r.slot ? `Počet pretekaných štrbín mriežky: <b>${r.slot}</b>.` : ""} ${g.info}${r.okV ? "" : ` <b>Pozor:</b> v′ = ${nf(r.vs,2)} m/s je mimo rozsahu grafu.`}`
+    : `Bod leží v oblasti pretoku, h₁ prekračuje h<sub>max</sub> o <b>${nf(-diff,1)} mm</b>. Zmenši šírku rozliatia B, posuň odvodňovač bližšie k obrubníku alebo zvoľ väčší typ. ${g.info}`;
+}
+
+/* small light chart for the A4 protocol */
+function capSmall(p, r){
+  const g = GRATES[p.typ];
+  if (!g.curves) return `<svg viewBox="0 0 300 60"><text x="10" y="34" font-size="11" fill="#3E474E">Iný odvodňovač – h max zadané ručne (${nf(r.hmax,1)} mm).</text></svg>`;
+  const top = g.curves[g.curves.length-1];
+  const ym = Math.ceil((Math.max(top[0][1], r.h1*1000) + 5)/10)*10;
+  const W = 300, H = 210, x0 = 30, x1 = W - 26, y0 = H - 28, y1 = 8, f = v => v.toFixed(1);
+  const sx = v => x0 + v/g.vlim*(x1 - x0), sy = h => y0 - h/ym*(y0 - y1);
+  const P = c => c.map(q => [sx(q[0]), sy(q[1])]);
+  const qt = P(top);
+  let s = `<path d="M${f(x0)} ${f(y1)} L${f(x0)} ${f(qt[0][1])} L${f(qt[0][0])} ${f(qt[0][1])}${segs(qt, f)} L${f(x1)} ${f(y1)} Z" fill="#FBE9E5"/>`;
+  range(0, ym, 10).forEach(h => s += `<line x1="${x0}" x2="${x1}" y1="${f(sy(h))}" y2="${f(sy(h))}" stroke="#E3E8EB"/><text x="${x0-4}" y="${f(sy(h)+3)}" text-anchor="end" font-size="8.5" fill="#5A6670">${h}</text>`);
+  range(0, g.vlim, g.vlim > 1 ? 0.5 : 0.2).forEach(v => s += `<text x="${f(sx(v))}" y="${y0+11}" text-anchor="middle" font-size="8.5" fill="#5A6670">${nf(v,1)}</text>`);
+  g.curves.forEach((c, i) => { const q = P(c), e = q[q.length-1]; const isTop = i === g.curves.length-1;
+    s += `<path d="M${f(q[0][0])} ${f(q[0][1])}${segs(q, f)}" fill="none" stroke="${isTop ? "#1C2226" : "#9AA6AE"}" stroke-width="${isTop ? 1.8 : 0.9}"/>`;
+    if (i === g.curves.length-1 || i === 0) s += `<text x="${f(e[0]+3)}" y="${f(e[1]+3)}" font-size="8.5" fill="#3E474E">${g.slots[i]}</text>`; });
+  const vx = Math.min(r.vs, g.vlim), hh = r.h1*1000, ok = r.okH && r.okV, col = ok ? "#1D6B41" : "#A93226";
+  s += `<line x1="${f(sx(vx))}" x2="${f(sx(vx))}" y1="${f(sy(hh))}" y2="${y0}" stroke="${col}" stroke-dasharray="3 2"/><line x1="${x0}" x2="${f(sx(vx))}" y1="${f(sy(hh))}" y2="${f(sy(hh))}" stroke="${col}" stroke-dasharray="3 2"/>`;
+  s += `<rect x="${f(sx(vx)-4)}" y="${f(sy(r.hmax)-4)}" width="8" height="8" fill="#fff" stroke="#1C2226" stroke-width="1.5" transform="rotate(45 ${f(sx(vx))} ${f(sy(r.hmax))})"/>`;
+  s += `<circle cx="${f(sx(vx))}" cy="${f(sy(hh))}" r="4" fill="${col}" stroke="#fff" stroke-width="1.5"/>`;
+  s += `<line x1="${x0}" x2="${x1}" y1="${y0}" y2="${y0}" stroke="#3E474E"/><line x1="${x0}" x2="${x0}" y1="${y0}" y2="${y1}" stroke="#3E474E"/>`;
+  s += `<text x="${f((x0+x1)/2)}" y="${H-3}" text-anchor="middle" font-size="9" fill="#1C2226">v′ [m/s]</text><text x="${x0+4}" y="${y1+10}" font-size="9" fill="#1C2226">h′₁ [mm]</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Graf hltnosti s vypočítaným bodom">${s}</svg>`;
+}
+
+/* ---------- plan of drains + pipe visual ---------- */
+function renderPlan(p, r){
+  const nd = Math.min(r.nodv, 80), W = 820, L0 = 10, L1 = 810, w = (L1 - L0)/nd;
+  let s = `<rect class="plan-deck" x="${L0}" y="40" width="${L1-L0}" height="70" rx="14"/><line class="plan-water" x1="${L0}" x2="${L1}" y1="100" y2="100"/><line class="flow" x1="${L0}" x2="${L1}" y1="100" y2="100"/><line class="plan-curb" x1="${L0}" x2="${L1}" y1="110" y2="110"/>`;
+  for (let i = 1; i <= nd; i++) s += `<rect class="plan-drain" x="${(L0 + w*i - w/2 - 6).toFixed(1)}" y="92" width="12" height="16" rx="3"/>`;
+  const d1 = L0 + w/2, d2 = d1 + w;
+  s += `<text class="plan-txt" x="20" y="62">smer pozdĺžneho sklonu P pd = ${nf(p.ppd,2)} %  →</text>`;
+  if (nd > 1) s += `<line class="plan-dim" x1="${d1}" x2="${d2}" y1="132" y2="132"/><line class="plan-dim" x1="${d1}" x2="${d1}" y1="126" y2="138"/><line class="plan-dim" x1="${d2}" x2="${d2}" y1="126" y2="138"/><text class="plan-num" x="${(d1+d2)/2}" y="154" text-anchor="${nd > 6 ? "start" : "middle"}">L = ${nf(r.Lreal,2)} m</text>`;
+  s += `<text class="plan-num" x="${L1}" y="30" text-anchor="end">max. L odv = ${nf(r.Lodv,2)} m</text>`;
+  $("plan").innerHTML = `<div class="chartbox"><svg viewBox="0 0 ${W} 170" role="img" aria-label="${r.nodv} odvodňovačov po ${nf(r.Lreal,2)} m">${s}</svg></div>`;
+  $("plancap").textContent = `${r.nodv} × ${nf(r.Lreal,2)} m = ${nf(p.l,2)} m` + (p.lines > 1 ? ` · ${p.lines} línie, spolu ${r.ntot} ks` : "");
+}
+function renderPipeViz(p, r){
+  const fl = Math.min(100, Math.max(0, p.fill));
+  const y = 18 + 164*(1 - fl/100);
+  $("pvwater").style.transform = `translate(0px, ${y.toFixed(1)}px)`;
+  $("pvtxt").textContent = `h/d ${nf(fl,1)} %`;
+  $("pvsvg").setAttribute("aria-label", `Plnenie potrubia ${nf(fl,1)} %`);
+  $("pvtitle").textContent = `Prierez a kapacita potrubia DN ${nf(p.dpot*1000,0)}`;
+  const qmax = Math.max(r.QM, r.Qp) || 1;
+  $("pvqm").textContent = `${nf(r.QM,2)} l/s`; $("pvqp").textContent = `${nf(r.Qp,2)} l/s`;
+  $("pvqmbar").style.width = (r.QM/qmax*100).toFixed(1) + "%";
+  $("pvqpbar").style.width = (r.Qp/qmax*100).toFixed(1) + "%";
+}
+
+/* ---------- rows, tiles, results, protocol ---------- */
+let lastRows = [];
+function renderSteps(p, r){
+  const g = GRATES[p.typ];
+  const k = (row, cls) => { row.cls = cls; return row; };
+  const ok1 = r.okH && r.okV;
+  const g1 = [
+    {title: "Prietok v rigole", rows: [
+      ["h","Výška vody pri obrubníku",r.h*1000,"mm",1,"h = B · P<sub>pr</sub>"],
+      ["A","Plocha vody v rigole",r.A,"m²",5,"A = 0,5 · B · h"],
+      ["O","Omočený obvod",r.O,"m",3,"O = B + h"],
+      ["R","Hydraulický polomer",r.R,"m",5,"R = A / O"],
+      ["C","Rýchlostný súčiniteľ",r.C,"m<sup>0,5</sup>/s",2,"C = R<sup>1/6</sup> / n"],
+      ["v","Rýchlosť na vtoku",r.v,"m/s",3,"v = C · (R · P<sub>pd</sub>)<sup>1/2</sup>"],
+      k(["Q","Prietok v rigole",r.Q,"l/s",2,"Q = A · v · 1000"], "key")]},
+    {title: "Graf hltnosti", rows: [
+      k(["v′","Rýchlosť vody na povrchu",r.vs,"m/s",3,"v′ = 1,15 · v" + (r.vlim ? ` ≤ ${nf(r.vlim,1)}` : "")], r.okV ? "" : "badrow"),
+      ["h′<sub>1</sub>","Výška vody v osi odvodňovača",r.h1*1000,"mm",1,"h′<sub>1</sub> = (B − b<sub>obr</sub> − a/2) · P<sub>pr</sub>"],
+      k(["h<sub>max</sub>","Max. výška vody",r.hmax,"mm",1, g.curves ? "h<sub>max</sub> z grafu pre v′" : "h<sub>max</sub> zadané ručne"], "key"),
+      k(["h<sub>1</sub> ≤ h<sub>max</sub>","Posúdenie mriežky", r.okH ? "vyhovuje" : "nevyhovuje","","","h′<sub>1</sub> ≤ h<sub>max</sub>"], r.okH ? "okrow" : "badrow")]},
+    {title: "Zachytené množstvo", rows: [
+      ["k","Súčiniteľ bočného nátoku",r.k,"",3,"k = 5 / v"],
+      ["k · h<sub>1</sub>","Priľahlá šírka",r.kh1,"m",3,"k · h<sub>1</sub>"],
+      ["a<sub>1</sub>","Spolupôsobiaca šírka",r.a1,"m",3,"a<sub>1</sub> = k·h<sub>1</sub> + a + min(b<sub>obr</sub>; k·h<sub>1</sub>)"],
+      ["ø h′<sub>1</sub>","Priemerná výška vody",r.hp*1000,"mm",1,"ø h′<sub>1</sub> = (B − a<sub>1</sub>/2) · P<sub>pr</sub>"],
+      ["A<sub>1</sub>","Plocha pritekajúcej vody",r.A1,"m²",5,"A<sub>1</sub> = a<sub>1</sub> · ø h′<sub>1</sub>"],
+      k(["H<sub>od</sub>","Hltnosť odvodňovača",r.Hod,"l/s",2,"H<sub>od</sub> = A<sub>1</sub> · v · 1000"], "key")]}
+  ];
+  const sw = p.lines > 1 ? "š<sub>l</sub>" : "š";
+  const g2rows = [];
+  if (p.lines > 1) g2rows.push(["š<sub>l</sub>","Šírka na jednu líniu",r.swl,"m",2,"š<sub>l</sub> = š / n<sub>l</sub>"]);
+  g2rows.push(k(["L<sub>odv</sub>","Vzdialenosť odvodňovačov",r.Lodv,"m",2,`L<sub>odv</sub> = H<sub>od</sub> / (q · ${sw} · φ · s)`], "key"));
+  g2rows.push(["n","Min. počet odvodňovačov v línii",String(r.nodv),"ks","","n = ⌈l / L<sub>odv</sub>⌉"]);
+  g2rows.push(k(["L","Rovnomerný rozostup",r.Lreal,"m",2,"L = l / n"], "key"));
+  if (p.lines > 1) g2rows.push(["n<sub>c</sub>","Počet odvodňovačov spolu",String(r.ntot),"ks","","n<sub>c</sub> = n · n<sub>l</sub>"]);
+  const g2 = [
+    {title: "Prítok z mosta", rows: [
+      ["F<sub>m</sub>","Odvodňovaná plocha mosta",r.Fm,"m²",2,"F<sub>m</sub> = š · l"],
+      k(["Q<sub>M</sub>","Množstvo odvádzanej vody",r.QM,"l/s",2,"Q<sub>M</sub> = F<sub>m</sub> · q · φ"], "key")]},
+    {title: "Rozmiestnenie", rows: g2rows}
+  ];
+  const g3 = [
+    {title: "Geometria prierezu", rows: [
+      ["α","Stredový uhol zaplnenia",r.theta,"°",1,"α = 2 · arccos(1 − 2·h/d)"],
+      ["S<sub>pot</sub>","Prietoková plocha",r.Sp,"m²",5,"S<sub>pot</sub> = r²/2 · (α − sin α)"],
+      ["O<sub>pot</sub>","Omočený obvod",r.Op,"m",4,"O<sub>pot</sub> = r · α"],
+      ["R<sub>pot</sub>","Hydraulický polomer",r.Rp,"m",5,"R<sub>pot</sub> = S<sub>pot</sub> / O<sub>pot</sub>"]]},
+    {title: "Prietok", rows: [
+      ["c","Rýchlostný súčiniteľ",r.cp,"m<sup>0,5</sup>/s",2,"c = (1/n) · R<sub>pot</sub><sup>1/6</sup>"],
+      ["v<sub>pot</sub>","Stredná profilová rýchlosť",r.vp,"m/s",3,"v<sub>pot</sub> = c · (R<sub>pot</sub> · i<sub>pot</sub>)<sup>1/2</sup>"],
+      k(["Q<sub>pot</sub>","Prietok potrubia",r.Qp,"l/s",2,"Q<sub>pot</sub> = S<sub>pot</sub> · v<sub>pot</sub> · 1000"], "key"),
+      k(["Q<sub>pot</sub> ≥ Q<sub>M</sub>","Posúdenie potrubia", r.okP ? "vyhovuje" : "nevyhovuje","","",`${nf(r.Qp,2)} ${r.okP ? "≥" : "<"} ${nf(r.QM,2)} l/s`], r.okP ? "okrow" : "badrow")]}
+  ];
+  [[g1,1],[g2,2],[g3,3]].forEach(([gs, i]) => {
+    $("calc" + i).innerHTML = calcGroups(gs);
+    $("calc" + i + "n").textContent = `${gs.reduce((a, x) => a + x.rows.length, 0)} riadkov · vzorce podľa výpočtového listu 205-00`;
+  });
+
+  // results + tiles
+  $("res1").innerHTML = result("Hltnosť jedného odvodňovača H<sub>od</sub>", nf(r.Hod,2), "l/s", ok1 ? "ok" : "bad");
+  $("res2").innerHTML = result("Odvodňovačov v línii", String(r.nodv), "ks", ok1 ? "info" : "bad");
+  $("res3").innerHTML = result("Kapacita potrubia Q<sub>pot</sub>", nf(r.Qp,2), "l/s", r.okP ? "ok" : "bad");
+  $("tiles1").innerHTML = [
+    tile({label: "Využitie mriežky h′<sub>1</sub> / h<sub>max</sub>", value: nf(r.h1*1000,1), unit: "mm", gauge: r.h1*1000/r.hmax, note: `h<sub>max</sub> ${nf(r.hmax,1)} mm${r.slot ? ` · štrbiny ${r.slot}` : ""}`, kind: r.okH ? "ok" : "bad"}),
+    tile(r.vlim ? {label: "Rýchlosť v′ / rozsah grafu", value: nf(r.vs,2), unit: "m/s", gauge: r.vs/r.vlim, note: `max. ${nf(r.vlim,1)} m/s`, kind: r.okV ? "ok" : "bad"}
+                : {label: "Rýchlosť vody na povrchu v′", value: nf(r.vs,2), unit: "m/s", note: "rozsah over u výrobcu", kind: "warn"}),
+    tile({label: "Hltnosť H<sub>od</sub>", value: nf(r.Hod,2), unit: "l/s", note: "→ do kroku 2", kind: "next"}),
+    tile({label: "Prietok v rigole Q", value: nf(r.Q,2), unit: "l/s", note: `zachytí ${nf(r.Hod/r.Q*100,0)} % · v = ${nf(r.v,2)} m/s`})
+  ].join("");
+  $("tiles2").innerHTML = [
+    tile({label: "Rozostup L / L<sub>odv</sub>", value: nf(r.Lreal,2), unit: "m", gauge: r.Lreal/r.Lodv, note: `max. ${nf(r.Lodv,2)} m`, kind: "ok"}),
+    tile({label: p.lines > 1 ? "Odvodňovačov spolu" : "Odvodňovačov v línii", value: String(p.lines > 1 ? r.ntot : r.nodv), unit: "ks", note: p.lines > 1 ? `${r.nodv} ks × ${p.lines} línie` : `po ${nf(r.Lreal,2)} m`}),
+    tile({label: "Prítok z mosta Q<sub>M</sub>", value: nf(r.QM,2), unit: "l/s", note: "→ do kroku 3", kind: "next"}),
+    tile({label: "Odvodňovaná plocha F<sub>m</sub>", value: nf(r.Fm,0), unit: "m²", note: "š · l"})
+  ].join("");
+  $("tiles3").innerHTML = [
+    tile({label: "Využitie potrubia Q<sub>M</sub> / Q<sub>pot</sub>", value: nf(r.QM,2), unit: "l/s", gauge: r.QM/r.Qp, note: r.okP ? "kapacita stačí" : "kapacita nestačí", kind: r.okP ? "ok" : "bad"}),
+    tile({label: "Kapacita Q<sub>pot</sub>", value: nf(r.Qp,2), unit: "l/s", note: "→ do protokolu", kind: "next"}),
+    tile({label: "Rýchlosť v potrubí", value: nf(r.vp,2), unit: "m/s", note: "Manning–Chézy"}),
+    tile({label: "Stredový uhol α", value: nf(r.theta,1), unit: "°", note: `pri h/d ${nf(p.fill,1)} %`})
+  ].join("");
+  $("carry2").innerHTML = `<div class="chip"><span class="cl">Hltnosť odvodňovača <b>H<sub>od</sub></b><em>← z kroku 1</em></span><span class="cv">${nf(r.Hod,2)} <small>l/s</small></span></div>`;
+  $("carry3").innerHTML = `<div class="chip"><span class="cl">Prítok z mosta <b>Q<sub>M</sub></b><em>← z kroku 2</em></span><span class="cv">${nf(r.QM,2)} <small>l/s</small></span></div>`;
+  const fail = $("fail1");
+  if (ok1) fail.classList.add("hidden");
+  else { fail.innerHTML = `<h3>Odvodňovač nevyhovuje – možné riešenia</h3><ul>${remedies(p, r).map(x => `<li>${x}</li>`).join("")}</ul>`; fail.classList.remove("hidden"); }
+  [["dot1", ok1 ? "ok" : "bad"], ["dot2", ok1 ? "info" : "bad"], ["dot3", r.okP ? "ok" : "bad"], ["dot4", ""]].forEach(([id, c]) => $(id).className = "dot " + c);
+  $("bsub").textContent = `Výpočtový list 205-00 · ${g.label}`;
+
+  renderProtocol(p, r, g1, g2, g3);
+}
+
+function renderProtocol(p, r, g1, g2, g3){
+  const g = GRATES[p.typ], ok1 = r.okH && r.okV;
+  const val = row => typeof row[2] === "string" ? row[2] : nf(row[2], row[4]);
+  const rhs = t => { t = t || ""; const i = t.indexOf(" = "); return i >= 0 ? t.slice(i + 3) : t; };
+  const trs = groups => groups.flatMap(gr => gr.rows).map(row => `<tr class="${row.cls || ""}"><td class="s">${row[0]}</td><td class="n">${row[1]}</td><td class="f">${rhs(row[5])}</td><td class="v">${val(row)} ${row[3]}</td></tr>`).join("");
+  const tbl = (groups) => `<table><thead><tr><th>Symbol</th><th>Veličina</th><th>Vzorec</th><th style="text-align:right">Hodnota</th></tr></thead><tbody>${trs(groups)}</tbody></table>`;
+  const inputs = GROUPS.map(gr => `<table><thead><tr><th colspan="3">${gr.title}</th></tr></thead><tbody>${gr.fields.filter(f => f.type !== "select" && (!f.customOnly || p.typ === "custom")).map(f => `<tr><td class="s">${f.sym}</td><td class="n">${f.name}</td><td class="v">${esc(String(state[f.id]).trim())} ${f.unit}</td></tr>`).join("")}</tbody></table>`).join("");
+  const box = (title, ok, text, status) => `<div class="box ${ok ? "" : "bad"}"><div class="bh"><span>${title}</span><span>${status || (ok ? "VYHOVUJE" : "NEVYHOVUJE")}</span></div><div>${text}</div></div>`;
+  const today = new Date().toLocaleDateString("sk-SK");
+  $("sheet").innerHTML = `
+    <div class="sh-top">
+      <div><div class="sh-kicker">Príloha technickej správy</div><h1>Výpočet odvodnenia mosta</h1><div class="sh-sub">Hltnosť odvodňovača · vzdialenosť odvodňovačov · posúdenie zberného potrubia</div></div>
+      <div class="sh-meta"><span>Stavba</span><b>${esc(state.stavba || "–")}</b><span>Objekt</span><b>${esc(state.objekt || "–")}</b><span>Odvodňovač</span><b>${g.label}</b><span>Dátum</span><b>${today}</b></div>
+    </div>
+    <section><h2>1 Vstupné údaje</h2><div class="g3">${inputs}</div></section>
+    <section class="row2">
+      <div><h2>2 Hltnosť odvodňovača</h2>${tbl(g1)}</div>
+      <figure><figcaption>Graf hltnosti – ${g.label.toLowerCase()}</figcaption>${capSmall(p, r)}
+        ${box("h′₁ ≤ h max", ok1, ok1 ? `Rezerva ${nf(r.hmax - r.h1*1000,1)} mm${r.slot ? `, pretekané štrbiny ${r.slot}` : ""}.` : (r.okV ? "Bod leží v oblasti pretoku." : "Rýchlosť v′ je mimo rozsahu grafu."))}
+      </figure>
+    </section>
+    <section class="g2"><div><h2>3 Vzdialenosť odvodňovačov</h2>${tbl(g2)}</div><div><h2>4 Zberné potrubie</h2>${tbl(g3)}</div></section>
+    <section><h2>5 Záver</h2><div class="g3">
+      ${box("Hltnosť", ok1, `${g.label}: h′₁ = ${nf(r.h1*1000,1)} ${r.okH ? "≤" : ">"} ${nf(r.hmax,1)} mm, H<sub>od</sub> = ${nf(r.Hod,2)} l/s.`)}
+      ${box("Rozmiestnenie", ok1, `${r.nodv} ks v línii po ${nf(r.Lreal,2)} m (max. ${nf(r.Lodv,2)} m)${p.lines > 1 ? `, spolu ${r.ntot} ks` : ""}.`, ok1 ? "NÁVRH" : "NEOVERENÉ")}
+      ${box("Potrubie", r.okP, `DN ${nf(p.dpot*1000,0)}, i = ${nf(p.ipot,2)} %: Q<sub>pot</sub> = ${nf(r.Qp,2)} ${r.okP ? "≥" : "<"} ${nf(r.QM,2)} l/s.`)}
+    </div></section>
+    <div class="sh-foot">
+      <div style="max-width:430px">Postup podľa výpočtového listu 205-00. Grafy hltnosti sú zdigitalizované z podkladov výrobcu, presnosť odčítania ±0,5 mm. Za posúdenie zodpovedá projektant.</div>
+      <div style="display:flex;gap:24px"><div>Vypracoval<br><b style="color:#1C2226">${esc(state.autor || "–")}</b></div><div class="sign">Podpis<div></div></div></div>
+    </div>`;
+
+  // plain-text protocol for clipboard
+  const fmt = row => `${plain(row[0])}\t${row[1]}\t${val(row)}\t${plain(row[3])}`;
   const inputsTxt = GROUPS.flatMap(gr => gr.fields).filter(f => f.type !== "select" && (!f.customOnly || p.typ === "custom"))
     .map(f => `${plain(f.sym)}\t${f.name}\t${String(state[f.id]).trim()}\t${f.unit}`);
-  const fmtRow = row => `${plain(row[0])}\t${row[1]}\t${typeof row[2]==="string"?row[2]:nf(row[2],row[4])}\t${plain(row[3])}`;
   lastRows = [
-    "VÝPOČET ODVODNENIA MOSTA", `Typ odvodňovača\t${g.label}`, "",
+    "VÝPOČET ODVODNENIA MOSTA", `Stavba\t${state.stavba || ""}`, `Objekt\t${state.objekt || ""}`, `Typ odvodňovača\t${g.label}`, "",
     "VSTUPY", ...inputsTxt, "",
-    "HLTNOSŤ ODVODŇOVAČA", ...t1.map(fmtRow), "",
-    "VÝPOČET MNOŽSTVA ODVODŇOVAČOV", ...t2.map(fmtRow), "",
-    "VÝPOČET POTRUBIA", ...t3.map(fmtRow)
+    "HLTNOSŤ ODVODŇOVAČA", ...g1.flatMap(x => x.rows).map(fmt), "",
+    "VÝPOČET MNOŽSTVA ODVODŇOVAČOV", ...g2.flatMap(x => x.rows).map(fmt), "",
+    "VÝPOČET POTRUBIA", ...g3.flatMap(x => x.rows).map(fmt)
   ];
 }
 
+/* ---------- update ---------- */
 function update(){
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e) {}
   const g = GRATES[state.typ];
   $("typinfo").innerHTML = g.info + (g.a ? ` Šírka a sa pri zmene typu nastaví na ${g.a} m.` : "");
+  document.querySelectorAll(".grates button").forEach(b => b.setAttribute("aria-pressed", b.dataset.typ === state.typ ? "true" : "false"));
   document.querySelectorAll(".customonly").forEach(el => el.classList.toggle("hidden", state.typ !== "custom"));
   const {p, bad} = readParams();
-  document.querySelectorAll(".field input").forEach(el => el.classList.toggle("err", bad.includes(el.id.slice(2))));
+  GROUPS.flatMap(gr => gr.fields).filter(f => f.type !== "select").forEach(f => {
+    $("box-" + f.id).classList.toggle("err", bad.includes(f.id));
+    $("f-" + f.id).setAttribute("aria-invalid", bad.includes(f.id) ? "true" : "false");
+  });
   const msgs = [];
   if (bad.length) msgs.push("Doplň kladné číselné hodnoty v označených poliach (desatinná čiarka aj bodka sú v poriadku).");
   if (!bad.length && p.B <= p.bobr + p.a/2) msgs.push("Šírka rozliatia B musí byť väčšia ako b<sub>obr</sub> + a/2, inak voda k osi odvodňovača nedotečie.");
@@ -733,7 +907,7 @@ function update(){
   const r = calc(p);
   if (r.hp <= 0){ $("msg").innerHTML = "Spolupôsobiaca šírka a₁ vychádza väčšia ako 2·B, skontroluj vstupy B, a a b<sub>obr</sub>."; $("msg").classList.remove("hidden"); return; }
   $("msg").classList.add("hidden");
-  renderVerdicts(p, r); renderCross(p, r); renderCapacity(p, r); renderSens(p, r); renderPipe(p, r); renderTables(p, r); animUpdate(p, r);
+  renderSteps(p, r); renderCross(p, r); renderCapacity(p, r); renderPlan(p, r); renderSens(p, r); renderPipeViz(p, r); renderPipe(p, r); animUpdate(p, r);
 }
 
 function toast(t){ const el = $("toast"); el.textContent = t; el.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove("show"), 2200); }
@@ -745,8 +919,11 @@ $("copy").addEventListener("click", async () => {
   }
   toast(ok ? "Protokol skopírovaný, vlož ho do Excelu alebo Wordu" : "Kopírovanie zlyhalo, prehliadač ho nepovolil");
 });
+$("print").addEventListener("click", () => window.print());
+window.addEventListener("beforeprint", () => { if (step !== 4) goStep(4); });
 $("reset").addEventListener("click", () => { state = {...DEFAULTS}; fillInputs(); update(); toast("Obnovené hodnoty z výpočtového listu 205-00"); });
 
 buildInputs();
 setupAnim();
 update();
+goStep(1);
