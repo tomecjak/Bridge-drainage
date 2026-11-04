@@ -1,11 +1,10 @@
 const CURVES = {"1":[[[0,24.0],[0.025,23.3],[0.05,22.5],[0.075,21.5],[0.1,20.7],[0.125,19.7],[0.15,18.9],[0.175,18.0],[0.2,17.1],[0.225,16.2],[0.25,15.3],[0.275,14.4],[0.3,13.5],[0.325,12.6],[0.35,11.8],[0.375,11.0],[0.4,10.3],[0.425,9.6],[0.45,8.9],[0.475,8.3],[0.5,7.7],[0.525,7.1],[0.55,6.6],[0.575,6.2],[0.6,5.8],[0.625,5.4],[0.65,5.1],[0.675,4.8],[0.7,4.5],[0.725,4.3],[0.75,4.1],[0.775,3.9],[0.8,3.8],[0.825,3.6],[0.85,3.5],[0.875,3.5],[0.9,3.4],[0.925,3.4],[0.95,3.4],[0.975,3.4],[1.0,3.4]],[[0,30.4],[0.025,29.7],[0.05,28.8],[0.075,27.9],[0.1,27.0],[0.125,26.1],[0.15,25.2],[0.175,24.3],[0.2,23.4],[0.225,22.5],[0.25,21.5],[0.275,20.7],[0.3,19.7],[0.325,18.9],[0.35,17.9],[0.375,17.0],[0.4,16.1],[0.425,15.2],[0.45,14.3],[0.475,13.5],[0.5,12.8],[0.525,12.0],[0.55,11.3],[0.575,10.7],[0.6,10.1],[0.625,9.5],[0.65,8.9],[0.675,8.4],[0.7,8.0],[0.725,7.5],[0.75,7.1],[0.775,6.7],[0.8,6.4],[0.825,6.1],[0.85,5.9],[0.875,5.6],[0.9,5.4],[0.925,5.2],[0.95,5.1],[0.975,5.0],[1.0,4.9]],[[0,36.8],[0.025,36.1],[0.05,35.2],[0.075,34.3],[0.1,33.4],[0.125,32.5],[0.15,31.6],[0.175,30.6],[0.2,29.8],[0.225,28.8],[0.25,27.9],[0.275,27.0],[0.3,26.1],[0.325,25.2],[0.35,24.3],[0.375,23.4],[0.4,22.5],[0.425,21.5],[0.45,20.6],[0.475,19.7],[0.5,18.7],[0.525,17.8],[0.55,16.9],[0.575,16.1],[0.6,15.2],[0.625,14.5],[0.65,13.7],[0.675,13.0],[0.7,12.3],[0.725,11.6],[0.75,11.0],[0.775,10.4],[0.8,9.8],[0.825,9.3],[0.85,8.8],[0.875,8.4],[0.9,8.0],[0.925,7.6],[0.95,7.3],[0.975,7.0],[1.0,6.8]],[[0,42.7],[0.025,42.1],[0.05,41.1],[0.075,40.3],[0.1,39.3],[0.125,38.4],[0.15,37.5],[0.175,36.6],[0.2,35.7],[0.225,34.8],[0.25,33.9],[0.275,32.9],[0.3,32.1],[0.325,31.1],[0.35,30.3],[0.375,29.3],[0.4,28.5],[0.425,27.5],[0.45,26.6],[0.475,25.7],[0.5,24.8],[0.525,23.9],[0.55,23.0],[0.575,22.0],[0.6,21.1],[0.625,20.1],[0.65,19.3],[0.675,18.4],[0.7,17.5],[0.725,16.7],[0.75,15.9],[0.775,15.1],[0.8,14.3],[0.825,13.5],[0.85,12.8],[0.875,12.1],[0.9,11.4],[0.925,10.8],[0.95,10.2],[0.975,9.6],[1.0,9.1]],[[0.079,45.7],[0.1,44.9],[0.125,44.0],[0.15,43.1],[0.175,42.1],[0.2,41.3],[0.225,40.3],[0.25,39.5],[0.275,38.5],[0.3,37.7],[0.325,36.7],[0.35,35.8],[0.375,34.9],[0.4,34.0],[0.425,33.1],[0.45,32.2],[0.475,31.3],[0.5,30.3],[0.525,29.5],[0.55,28.5],[0.575,27.7],[0.6,26.7],[0.625,25.8],[0.65,24.9],[0.675,24.0],[0.7,23.1],[0.725,22.2],[0.75,21.3],[0.775,20.4],[0.8,19.5],[0.825,18.6],[0.85,17.7],[0.875,16.7],[0.9,15.9],[0.925,14.9],[0.95,14.0],[0.975,13.1],[1.0,12.3]]],"2":[[[0,36.7],[0.025,36.3],[0.05,35.4],[0.075,34.7],[0.1,33.9],[0.125,33.1],[0.15,32.3],[0.175,31.5],[0.2,30.7],[0.225,29.9],[0.25,29.1],[0.275,28.3],[0.3,27.5],[0.325,26.8],[0.35,25.9],[0.375,25.1],[0.4,24.3],[0.425,23.6],[0.45,22.7],[0.475,21.9],[0.5,21.2],[0.525,20.4],[0.55,19.5],[0.575,18.8],[0.6,18.0],[0.625,17.2],[0.65,16.4],[0.675,15.6],[0.7,14.9],[0.725,14.3],[0.75,13.7],[0.775,13.2],[0.8,12.7],[0.825,12.2],[0.85,11.8],[0.875,11.4],[0.9,11.0],[0.925,10.6],[0.95,10.3],[0.975,9.9],[1.0,9.6],[1.025,9.3],[1.05,9.0],[1.075,8.7],[1.1,8.5],[1.125,8.2],[1.15,8.0],[1.175,7.7],[1.2,7.5],[1.225,7.3],[1.25,7.1],[1.275,7.0],[1.3,6.8],[1.325,6.6],[1.35,6.5],[1.375,6.3],[1.4,6.2],[1.425,6.1],[1.45,6.0],[1.475,5.9],[1.5,5.9]],[[0,46.5],[0.025,46.0],[0.05,45.3],[0.075,44.4],[0.1,43.6],[0.125,42.9],[0.15,42.1],[0.175,41.2],[0.2,40.4],[0.225,39.7],[0.25,38.9],[0.275,38.0],[0.3,37.3],[0.325,36.5],[0.35,35.7],[0.375,34.9],[0.4,34.1],[0.425,33.3],[0.45,32.5],[0.475,31.7],[0.5,30.9],[0.525,30.1],[0.55,29.4],[0.575,28.5],[0.6,27.7],[0.625,27.0],[0.65,26.2],[0.675,25.3],[0.7,24.6],[0.725,23.8],[0.75,23.0],[0.775,22.2],[0.8,21.4],[0.825,20.6],[0.85,19.9],[0.875,19.2],[0.9,18.5],[0.925,17.8],[0.95,17.2],[0.975,16.6],[1.0,16.0],[1.025,15.4],[1.05,14.9],[1.075,14.4],[1.1,13.9],[1.125,13.4],[1.15,12.9],[1.175,12.5],[1.2,12.1],[1.225,11.7],[1.25,11.3],[1.275,10.9],[1.3,10.6],[1.325,10.2],[1.35,9.9],[1.375,9.7],[1.4,9.4],[1.425,9.1],[1.45,8.9],[1.475,8.7],[1.5,8.5]],[[0,55.0],[0.025,54.7],[0.05,53.8],[0.075,53.0],[0.1,52.3],[0.125,51.5],[0.15,50.6],[0.175,49.8],[0.2,49.1],[0.225,48.3],[0.25,47.4],[0.275,46.7],[0.3,45.9],[0.325,45.1],[0.35,44.3],[0.375,43.5],[0.4,42.7],[0.425,41.9],[0.45,41.1],[0.475,40.3],[0.5,39.5],[0.525,38.8],[0.55,37.9],[0.575,37.1],[0.6,36.4],[0.625,35.6],[0.65,34.7],[0.675,34.0],[0.7,33.2],[0.725,32.4],[0.75,31.6],[0.775,30.8],[0.8,30.0],[0.825,29.2],[0.85,28.5],[0.875,27.6],[0.9,26.8],[0.925,26.1],[0.95,25.3],[0.975,24.5],[1.0,23.8],[1.025,23.1],[1.05,22.4],[1.075,21.7],[1.1,21.0],[1.125,20.4],[1.15,19.7],[1.175,19.1],[1.2,18.4],[1.225,17.8],[1.25,17.2],[1.275,16.6],[1.3,16.0],[1.325,15.4],[1.35,14.8],[1.375,14.3],[1.4,13.7],[1.425,13.2],[1.45,12.7],[1.475,12.2],[1.5,11.8]],[[0.125,59.7],[0.15,58.9],[0.175,58.1],[0.2,57.3],[0.225,56.5],[0.25,55.8],[0.275,54.9],[0.3,54.1],[0.325,53.3],[0.35,52.6],[0.375,51.7],[0.4,50.9],[0.425,50.2],[0.45,49.4],[0.475,48.5],[0.5,47.8],[0.525,47.0],[0.55,46.2],[0.575,45.4],[0.6,44.6],[0.625,43.8],[0.65,43.0],[0.675,42.3],[0.7,41.4],[0.725,40.6],[0.75,39.9],[0.775,39.1],[0.8,38.2],[0.825,37.5],[0.85,36.7],[0.875,35.9],[0.9,35.1],[0.925,34.3],[0.95,33.5],[0.975,32.7],[1.0,31.9],[1.025,31.1],[1.05,30.3],[1.075,29.6],[1.1,28.7],[1.125,27.9],[1.15,27.2],[1.175,26.4],[1.2,25.5],[1.225,24.8],[1.25,24.0],[1.275,23.2],[1.3,22.3],[1.325,21.6],[1.35,20.8],[1.375,20.0],[1.4,19.3],[1.425,18.4],[1.45,17.6],[1.475,16.8],[1.5,16.2]]],"3":[[[0,40.4],[0.025,39.8],[0.05,38.8],[0.075,37.8],[0.1,36.9],[0.125,35.9],[0.15,34.8],[0.175,33.9],[0.2,32.9],[0.225,31.9],[0.25,30.9],[0.275,29.9],[0.3,28.9],[0.325,27.9],[0.35,27.0],[0.375,26.0],[0.4,24.9],[0.425,24.0],[0.45,23.0],[0.475,22.0],[0.5,21.0],[0.525,20.1],[0.55,19.0],[0.575,18.1],[0.6,17.2],[0.625,16.3],[0.65,15.5],[0.675,14.8],[0.7,14.0],[0.725,13.4],[0.75,12.7],[0.775,12.2],[0.8,11.6],[0.825,11.0],[0.85,10.6],[0.875,10.1],[0.9,9.7],[0.925,9.3],[0.95,9.0],[0.975,8.6],[1.0,8.3],[1.025,8.0],[1.05,7.8],[1.075,7.5],[1.1,7.3],[1.125,7.1],[1.15,6.9],[1.175,6.7],[1.2,6.6],[1.225,6.4],[1.25,6.3],[1.275,6.2],[1.3,6.1],[1.325,6.0],[1.35,6.0],[1.375,5.9],[1.4,5.9],[1.425,5.9],[1.45,5.9],[1.475,5.8],[1.5,5.7]],[[0,50.4],[0.025,49.8],[0.05,48.8],[0.075,47.9],[0.1,46.8],[0.125,45.8],[0.15,44.9],[0.175,43.9],[0.2,42.9],[0.225,41.9],[0.25,40.9],[0.275,39.9],[0.3,38.9],[0.325,38.0],[0.35,37.0],[0.375,35.9],[0.4,35.0],[0.425,34.0],[0.45,33.0],[0.475,32.1],[0.5,31.1],[0.525,30.0],[0.55,29.0],[0.575,28.1],[0.6,27.1],[0.625,26.0],[0.65,25.1],[0.675,24.1],[0.7,23.2],[0.725,22.2],[0.75,21.4],[0.775,20.6],[0.8,19.8],[0.825,19.0],[0.85,18.3],[0.875,17.6],[0.9,17.0],[0.925,16.3],[0.95,15.7],[0.975,15.1],[1.0,14.6],[1.025,14.1],[1.05,13.6],[1.075,13.1],[1.1,12.6],[1.125,12.2],[1.15,11.8],[1.175,11.4],[1.2,11.0],[1.225,10.7],[1.25,10.4],[1.275,10.1],[1.3,9.8],[1.325,9.5],[1.35,9.3],[1.375,9.1],[1.4,8.9],[1.425,8.8],[1.45,8.7],[1.475,8.6],[1.5,8.6]],[[0,60.9],[0.025,60.3],[0.05,59.3],[0.075,58.4],[0.1,57.4],[0.125,56.3],[0.15,55.4],[0.175,54.4],[0.2,53.4],[0.225,52.5],[0.25,51.5],[0.275,50.4],[0.3,49.5],[0.325,48.5],[0.35,47.5],[0.375,46.5],[0.4,45.6],[0.425,44.5],[0.45,43.5],[0.475,42.6],[0.5,41.6],[0.525,40.5],[0.55,39.6],[0.575,38.6],[0.6,37.6],[0.625,36.6],[0.65,35.7],[0.675,34.6],[0.7,33.6],[0.725,32.7],[0.75,31.7],[0.775,30.7],[0.8,29.7],[0.825,28.7],[0.85,27.8],[0.875,26.8],[0.9,25.9],[0.925,25.0],[0.95,24.2],[0.975,23.3],[1.0,22.5],[1.025,21.7],[1.05,20.9],[1.075,20.2],[1.1,19.5],[1.125,18.8],[1.15,18.1],[1.175,17.4],[1.2,16.8],[1.225,16.2],[1.25,15.6],[1.275,15.1],[1.3,14.6],[1.325,14.1],[1.35,13.6],[1.375,13.2],[1.4,12.8],[1.425,12.4],[1.45,12.1],[1.475,11.8],[1.5,11.6]],[[0,70.5],[0.025,69.8],[0.05,68.8],[0.075,67.9],[0.1,66.9],[0.125,65.9],[0.15,65.0],[0.175,63.9],[0.2,62.9],[0.225,61.9],[0.25,61.0],[0.275,60.0],[0.3,58.9],[0.325,58.0],[0.35,57.0],[0.375,56.0],[0.4,55.1],[0.425,54.1],[0.45,53.0],[0.475,52.0],[0.5,51.1],[0.525,50.1],[0.55,49.0],[0.575,48.2],[0.6,47.1],[0.625,46.1],[0.65,45.2],[0.675,44.2],[0.7,43.1],[0.725,42.2],[0.75,41.2],[0.775,40.2],[0.8,39.2],[0.825,38.3],[0.85,37.2],[0.875,36.2],[0.9,35.3],[0.925,34.3],[0.95,33.3],[0.975,32.4],[1.0,31.4],[1.025,30.5],[1.05,29.6],[1.075,28.7],[1.1,27.8],[1.125,26.9],[1.15,26.1],[1.175,25.2],[1.2,24.4],[1.225,23.6],[1.25,22.8],[1.275,22.0],[1.3,21.2],[1.325,20.4],[1.35,19.7],[1.375,18.9],[1.4,18.2],[1.425,17.5],[1.45,16.8],[1.475,16.2],[1.5,15.7]],[[0.125,75.0],[0.15,73.9],[0.175,73.0],[0.2,72.0],[0.225,71.0],[0.25,70.0],[0.275,69.1],[0.3,68.0],[0.325,67.0],[0.35,66.1],[0.375,65.1],[0.4,64.1],[0.425,63.2],[0.45,62.1],[0.475,61.1],[0.5,60.1],[0.525,59.2],[0.55,58.2],[0.575,57.1],[0.6,56.2],[0.625,55.2],[0.65,54.2],[0.675,53.3],[0.7,52.2],[0.725,51.2],[0.75,50.2],[0.775,49.3],[0.8,48.3],[0.825,47.2],[0.85,46.3],[0.875,45.3],[0.9,44.3],[0.925,43.4],[0.95,42.4],[0.975,41.3],[1.0,40.3],[1.025,39.4],[1.05,38.4],[1.075,37.3],[1.1,36.5],[1.125,35.4],[1.15,34.4],[1.175,33.5],[1.2,32.5],[1.225,31.4],[1.25,30.5],[1.275,29.5],[1.3,28.5],[1.325,27.5],[1.35,26.6],[1.375,25.5],[1.4,24.5],[1.425,23.6],[1.45,22.6],[1.475,21.6],[1.5,20.7]]]};
 const GRATES = {
-  g300:   {label:"Odvodňovač 300 × 300", info:"Mriežka 300 × 300 mm, rám 330 × 330 mm.", a:"0,3", len:0.30, vlim:1.0, slots:["1","2","3","4","5"], curves:CURVES["1"]},
-  g500x300:{label:"Odvodňovač 500 × 300", info:"Mriežka 300 × 500 mm (šírka × dĺžka), rám 330 × 530 mm.", a:"0,3", len:0.50, vlim:1.5, slots:["1–2","3–4","5–6","7–8"], curves:CURVES["2"]},
-  g500:   {label:"Odvodňovač 500 × 500", info:"Mriežka 455 × 430 mm (šírka × dĺžka), rám 485 × 460 mm.", a:"0,455", len:0.43, vlim:1.5, slots:["1","2","3","4","5"], curves:CURVES["3"]},
-  custom: {label:"Iný odvodňovač (h\u2098\u2090\u2093 zadám ručne)", info:"Bez grafu. Hodnotu h<sub>max</sub> odčítaj z podkladov výrobcu pre vypočítanú rýchlosť v′.", a:null, vlim:null, slots:null, curves:null}
+  g300:   {label:"Odvodňovač 300 × 300", info:"Mriežka 300 × 300 mm, rám 330 × 330 mm.", a:"0,33", len:0.30, vlim:1.0, slots:["1","2","3","4","5"], curves:CURVES["1"]},
+  g500x300:{label:"Odvodňovač 500 × 300", info:"Mriežka 300 × 500 mm (šírka × dĺžka), rám 330 × 530 mm.", a:"0,33", len:0.50, vlim:1.5, slots:["1–2","3–4","5–6","7–8"], curves:CURVES["2"]},
+  g500:   {label:"Odvodňovač 500 × 500", info:"Mriežka 455 × 430 mm (šírka × dĺžka), rám 486 × 460 mm.", a:"0,486", len:0.43, vlim:1.5, slots:["1","2","3","4","5"], curves:CURVES["3"]}
 };
-const DEFAULTS = {typ:"g300", ppr:"2,5", ppd:"2,9", B:"1", a:"0,3", bobr:"0,025", n:"0,015", hmaxManual:"20",
+const DEFAULTS = {typ:"g300", ppr:"2,5", ppd:"2,9", B:"1", a:"0,33", bobr:"0,025", n:"0,015",
   l:"156,4", sw:"18,4", lines:"1", q:"0,02", phi:"0,9", s:"2",
   dpot:"0,25", ipot:"2,9", npot:"0,014", fill:"66,65"};
 const GROUPS = [
@@ -14,10 +13,9 @@ const GROUPS = [
     {id:"ppr", name:"Priečny sklon", sym:"P<sub>pr</sub>", unit:"%"},
     {id:"ppd", name:"Pozdĺžny sklon", sym:"P<sub>pd</sub>", unit:"%"},
     {id:"B", name:"Šírka rozliatia", sym:"B", unit:"m"},
-    {id:"a", name:"Šírka odvodňovača", sym:"a", unit:"m"},
+    {id:"a", name:"Šírka rámu odvodňovača", sym:"a", unit:"m", fixed:true},
     {id:"bobr", name:"Vzdialenosť od obrubníka", sym:"b<sub>obr</sub>", unit:"m"},
-    {id:"n", name:"Súčiniteľ drsnosti povrchu", sym:"n", unit:""},
-    {id:"hmaxManual", name:"Max. výška vody podľa výrobcu", sym:"h<sub>max</sub>", unit:"mm", customOnly:true}
+    {id:"n", name:"Súčiniteľ drsnosti povrchu", sym:"n", unit:""}
   ]},
   {title:"Odvodňovaná plocha", fields:[
     {id:"l", name:"Dĺžka odvodňovanej plochy", sym:"l", unit:"m"},
@@ -37,6 +35,8 @@ const GROUPS = [
 const STORE_KEY = "odvodnenie-mosta-v1";
 let state = {...DEFAULTS};
 try { const s = localStorage.getItem(STORE_KEY); if (s) state = {...DEFAULTS, ...JSON.parse(s)}; } catch(e) {}
+if (!GRATES[state.typ]) state.typ = DEFAULTS.typ;
+state.a = GRATES[state.typ].a;
 
 /* ---------- helpers ---------- */
 const $ = id => document.getElementById(id);
@@ -60,7 +60,6 @@ function range(a, b, st){ const out=[]; for (let v=a; v<=b+st*1e-6; v+=st) out.p
 function readParams(){
   const p = {typ: state.typ}; const bad = [];
   GROUPS.flatMap(g=>g.fields).filter(f=>f.type!=="select").forEach(f => {
-    if (f.customOnly && state.typ !== "custom") { p[f.id] = parse(state[f.id]); return; }
     const v = parse(state[f.id]);
     p[f.id] = v;
     let ok = Number.isFinite(v) && v > 0;
@@ -321,7 +320,7 @@ function animText(){
   const sw = p.lines > 1 ? "š<sub>l</sub>" : "š";
   const inflow = p.q*r.swl*p.phi*r.Lodv;
   const T = {
-    all: `Voda tečie rigolom priemernou rýchlosťou v = ${nf(r.v,2)} m/s. Modré kvapky z pásu a<sub>1</sub> skončia v odvodňovači, sivé ho obtečú. Prepínaj kroky 1 až 4 pre vysvetlenie jednotlivých častí výpočtu.`,
+    all: `Voda tečie rigolom priemernou rýchlosťou v = ${nf(r.v,2)} m/s. Modré kvapky z pásu a<sub>1</sub> skončia v odvodňovači, sivé ho obtečú.`,
     "5": "",
     "1": `Priečny sklon P<sub>pr</sub> = ${nf(p.ppr,2)} % ženie vodu k obrubníku, kde je najhlbšia (h = ${nf(r.h*1000,1)} mm). Rozlieva sa do šírky B = ${nf(p.B,2)} m a smerom od obrubníka plytčie, preto je tam menej kvapiek. Celkový prietok v rigole je Q = A · v = ${nf(r.Q,2)} l/s.`,
     "2": `Mriežka nezachytí len vodu, ktorá tečie priamo nad ňou. Pred odvodňovačom sa voda stáča do strán, odvodňovač tak „dosiahne“ aj pás vedľa mriežky so šírkou k · h<sub>1</sub> = ${nf(r.kh1,3)} m (k = 5/v = ${nf(r.k,2)}). Spolu s mriežkou a pásom pri obrubníku vzniká spolupôsobiaca šírka a<sub>1</sub> = ${nf(r.a1,3)} m.`,
@@ -392,7 +391,7 @@ function activeSet(){
   anim.demo = (anim.step === "5" && r.okH && r.okV) ? findDemo(p) : null;
   anim.p = anim.demo ? anim.demo.p : p;
   anim.r = anim.demo ? anim.demo.r : r;
-  const key = JSON.stringify([anim.p.B, anim.p.a, anim.p.bobr, anim.p.ppr, anim.p.ppd, anim.p.n, anim.p.typ, anim.p.hmaxManual]);
+  const key = JSON.stringify([anim.p.B, anim.p.a, anim.p.bobr, anim.p.ppr, anim.p.ppd, anim.p.n, anim.p.typ]);
   if (key !== anim.key && anim.W){ anim.key = key; seedParticles(animGeo()); }
 }
 function animUpdate(p, r){
@@ -402,7 +401,6 @@ function animUpdate(p, r){
     zone:cssv("--zone"), hatch:cssv("--water-fill"), pass:cssv("--pass")};
   activeSet();
   animText(); animStats();
-  $("step5").classList.toggle("alert", !(r.okH && r.okV));
   if (!anim.playing) drawAnim();
 }
 function animLoop(ts){
@@ -420,20 +418,15 @@ function setupAnim(){
   animResize();
   if (window.ResizeObserver) new ResizeObserver(() => { const w = cv.parentElement.clientWidth; if (Math.abs(w - anim.W) > 2){ animResize(); if (anim.realP){ anim.key = ""; animUpdate(anim.realP, anim.realR); drawAnim(); } } }).observe(cv.parentElement);
   if (window.IntersectionObserver) new IntersectionObserver(es => { anim.visible = es[0].isIntersecting; }).observe(cv);
-  $("animplay").textContent = anim.playing ? "Pozastaviť" : "Spustiť animáciu";
-  $("animplay").addEventListener("click", () => { anim.playing = !anim.playing; $("animplay").textContent = anim.playing ? "Pozastaviť" : "Spustiť animáciu"; });
-  $("animspeed").addEventListener("change", e => { anim.speed = +e.target.value; });
-  document.querySelectorAll("#animsteps button").forEach(b => b.addEventListener("click", () => {
-    anim.step = b.dataset.step;
-    document.querySelectorAll("#animsteps button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
-    if (anim.realP){ activeSet(); animText(); animStats(); drawAnim(); }
-  }));
   if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (anim.realP){ animUpdate(anim.realP, anim.realR); drawAnim(); } });
   requestAnimationFrame(animLoop);
 }
 
+let crossLast = null;
 function renderCross(p, r){
-  const W = 720, H = 322, curbX = 556, left = 30;
+  crossLast = [p, r];
+  const cw = $("cross").clientWidth;
+  const W = Math.round(Math.max(300, Math.min(720, cw || 720))), H = 296, narrow = W < 480, curbX = W - (narrow ? 134 : 164), left = narrow ? 12 : 30;
   const dMax = p.B*1.14;
   const hs = (curbX-left)/dMax;
   const ppr = p.ppr/100;
@@ -483,7 +476,7 @@ function renderCross(p, r){
   [X(dR), X(dL)].forEach(x => s += `<line class="dim" x1="${x}" x2="${x}" y1="46" y2="${Y(r.h)}" stroke-dasharray="2 3"/>`);
   [X(dOut), X(dIn)].forEach(x => s += `<line class="dim" x1="${x}" x2="${x}" y1="${yr-6}" y2="${Y(r.h)}" stroke-dasharray="2 3"/>`);
   // vertical h at curb
-  const vx = curbX + 56;
+  const vx = curbX + (narrow ? 44 : 56);
   s += `<line class="dim" x1="${vx}" x2="${vx}" y1="${Y(r.h)}" y2="${Y(0)}"/><line class="dim" x1="${curbX+36}" x2="${vx+5}" y1="${Y(r.h)}" y2="${Y(r.h)}"/><line class="dim" x1="${curbX+36}" x2="${vx+5}" y1="${Y(0)}" y2="${Y(0)}"/>`;
   s += `<text class="dimtxt w" x="${vx+8}" y="${(Y(r.h)+Y(0))/2+4}">h = ${nf(r.h*1000,1)} mm</text>`;
   // h1 at drain axis
@@ -491,10 +484,16 @@ function renderCross(p, r){
   s += `<line stroke="var(--water)" stroke-width="1.6" x1="${ax}" x2="${ax}" y1="${Y(r.h)}" y2="${Y(zAx)}"/>`;
   s += `<text class="dimtxt w" x="${ax}" y="${Y(r.h)-8}" text-anchor="middle">h₁ = ${nf(r.h1*1000,1)} mm</text>`;
   // slope note
-  s += `<text class="small" x="${X(dMax)+4}" y="${Y(zMax)-10}">${sb("P","pr",` = ${nf(p.ppr,2)} %  →`)}</text>`;
-  s += `<text class="small" x="${left}" y="${H-6}">Výšky sú prevýšené ${nf(exag,0)}×. Šrafovaná plocha A₁ = a₁ · ø h′₁ vteká do odvodňovača.</text>`;
+  s += `<text class="small" x="${X(dMax)+4}" y="${narrow ? Y(zMax)+62 : Y(zMax)-10}">${sb("P","pr",` = ${nf(p.ppr,2)} %  →`)}</text>`;
   $("cross").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Priečny rez rigolom s rozliatím vody">${s}</svg>`;
-  $("crosscap").innerHTML = `Voda sa rozlieva do šírky <b>B = ${nf(p.B,2)} m</b> od obrubníka. Odvodňovač zachytí vodu zo spolupôsobiacej šírky <b>a₁ = ${nf(r.a1,3)} m</b>, čo je <b>${nf(r.Hod,2)} l/s</b> z celkového prietoku v rigole ${nf(r.Q,2)} l/s.`;
+  $("crosscap").innerHTML = `Voda sa rozlieva do šírky <b>B = ${nf(p.B,2)} m</b> od obrubníka. Odvodňovač zachytí vodu zo spolupôsobiacej šírky <b>a₁ = ${nf(r.a1,3)} m</b>, čo je <b>${nf(r.Hod,2)} l/s</b> z celkového prietoku v rigole ${nf(r.Q,2)} l/s. Výšky sú prevýšené ${nf(exag,0)}×, šrafovaná plocha A₁ = a₁ · ø h′₁ vteká do odvodňovača.`;
+}
+if (window.ResizeObserver){
+  let crossW = 0;
+  new ResizeObserver(() => {
+    const w = $("cross").clientWidth;
+    if (w && Math.abs(w - crossW) > 2 && crossLast){ crossW = w; renderCross(...crossLast); }
+  }).observe($("cross"));
 }
 
 
@@ -563,7 +562,7 @@ function renderPipe(p, r){
 
 
 /* ---------- step navigation ---------- */
-const SHORT = {g300:"300 × 300", g500x300:"500 × 300", g500:"500 × 500", custom:"iný typ"};
+const SHORT = {g300:"300 × 300", g500x300:"500 × 300", g500:"500 × 500"};
 let step = 1;
 function goStep(n){
   step = n;
@@ -588,7 +587,7 @@ function buildInputs(){
       if (f.type === "select"){
         html += `<div class="field"><span class="flabel" id="typ-lab">Typ odvodňovača</span><div class="grates" role="group" aria-labelledby="typ-lab">${Object.keys(GRATES).map(k => `<button type="button" data-typ="${k}" aria-pressed="false">${SHORT[k]}</button>`).join("")}</div><div class="hint" id="typinfo"></div></div>`;
       } else {
-        html += `<div class="field${f.customOnly ? " customonly" : ""}"><div class="row"><label for="f-${f.id}">${f.name} <b>${f.sym}</b></label><div class="inbox" id="box-${f.id}"><input id="f-${f.id}" inputmode="decimal" autocomplete="off" spellcheck="false"><span class="unit">${f.unit}</span></div></div>${f.hint ? `<div class="hint">${f.hint}</div>` : ""}</div>`;
+        html += `<div class="field"><div class="row"><label for="f-${f.id}">${f.name} <b>${f.sym}</b></label><div class="inbox${f.fixed ? " fixed" : ""}" id="box-${f.id}"><input id="f-${f.id}"${f.fixed ? ` readonly tabindex="-1" title="Určené typom odvodňovača"` : ""} inputmode="decimal" autocomplete="off" spellcheck="false"><span class="unit">${f.unit}</span></div></div>${f.hint ? `<div class="hint">${f.hint}</div>` : ""}</div>`;
       }
     });
     $("params" + (gi + 1)).innerHTML = html;
@@ -596,10 +595,10 @@ function buildInputs(){
   document.querySelectorAll(".grates button").forEach(b => b.addEventListener("click", () => {
     state.typ = b.dataset.typ;
     const g = GRATES[state.typ];
-    if (g.a){ state.a = g.a; $("f-a").value = g.a; }
+    state.a = g.a; $("f-a").value = g.a;
     update();
   }));
-  GROUPS.flatMap(g => g.fields).filter(f => f.type !== "select").forEach(f => {
+  GROUPS.flatMap(g => g.fields).filter(f => f.type !== "select" && !f.fixed).forEach(f => {
     $("f-" + f.id).addEventListener("input", e => { state[f.id] = e.target.value; update(); });
   });
   [["m-stavba","stavba"],["m-objekt","objekt"],["m-autor","autor"]].forEach(([id, k]) => {
@@ -699,6 +698,52 @@ function renderCapacity(p, r){
   $("capcap").innerHTML = r.okH
     ? `Bod leží pod hraničnou krivkou, rezerva <b>${nf(diff,1)} mm</b> (${nf(diff/r.hmax*100,0)} %). ${r.slot ? `Počet pretekaných štrbín mriežky: <b>${r.slot}</b>.` : ""} ${g.info}${r.okV ? "" : ` <b>Pozor:</b> v′ = ${nf(r.vs,2)} m/s je mimo rozsahu grafu.`}`
     : `Bod leží v oblasti pretoku, h₁ prekračuje h<sub>max</sub> o <b>${nf(-diff,1)} mm</b>. Zmenši šírku rozliatia B, posuň odvodňovač bližšie k obrubníku alebo zvoľ väčší typ. ${g.info}`;
+}
+
+/* small light cross-section for the A4 protocol */
+function crossSmall(p, r){
+  const W = 300, H = 172, curbX = 232, left = 10, f = v => v.toFixed(1);
+  const dMax = p.B*1.14, ppr = p.ppr/100, zMax = dMax*ppr;
+  const hs = (curbX - left)/dMax, vs = 46/Math.max(zMax, 1e-6), baseY = 128;
+  const X = d => curbX - d*hs, Y = z => baseY - z*vs, exag = vs/hs;
+  const ink = "#1C2226", mut = "#5A6670", blue = "#2F6FB0";
+  const dIn = p.bobr, dOut = p.bobr + p.a;
+  const dL = Math.max(0, p.bobr - Math.min(p.bobr, r.kh1)), dR = Math.min(p.B, p.bobr + p.a + r.kh1);
+  let s = `<defs><pattern id="hatchS" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="${blue}" stroke-width="1.2"/></pattern></defs>`;
+  s += `<polygon points="${f(X(dMax))},${f(Y(zMax))} ${curbX},${baseY} ${curbX},${baseY+20} ${f(X(dMax))},${f(Y(zMax)+20)}" fill="#E3E8EB" stroke="#9AA6AE" stroke-width="0.8"/>`;
+  s += `<polygon points="${f(X(dOut))},${f(Y(dOut*ppr))} ${f(X(dIn))},${f(Y(dIn*ppr))} ${f(X(dIn))},${baseY+26} ${f(X(dOut))},${baseY+26}" fill="#fff" stroke="#3E474E" stroke-width="0.9"/>`;
+  s += `<line x1="${f(X(dOut))}" y1="${f(Y(dOut*ppr))}" x2="${f(X(dIn))}" y2="${baseY+26}" stroke="#9AA6AE" stroke-width="0.7"/><line x1="${f(X(dIn))}" y1="${f(Y(dIn*ppr))}" x2="${f(X(dOut))}" y2="${baseY+26}" stroke="#9AA6AE" stroke-width="0.7"/>`;
+  s += `<rect x="${curbX}" y="${f(Y(p.B*ppr)-14)}" width="14" height="${f(baseY+20-(Y(p.B*ppr)-14))}" fill="#B8C2C8" stroke="#3E474E" stroke-width="0.8"/>`;
+  s += `<polygon points="${f(X(p.B))},${f(Y(r.h))} ${curbX},${f(Y(r.h))} ${curbX},${baseY}" fill="#D6E6F5" stroke="${blue}" stroke-width="0.9"/>`;
+  if (dR > dL) s += `<polygon fill="url(#hatchS)" points="${f(X(dR))},${f(Y(r.h))} ${f(X(dL))},${f(Y(r.h))} ${f(X(dL))},${f(Y(dL*ppr))} ${f(X(dR))},${f(Y(dR*ppr))}"/>`;
+  s += `<line x1="${f(X(dMax))}" y1="${f(Y(zMax))}" x2="${curbX}" y2="${baseY}" stroke="#3E474E" stroke-width="1.6"/>`;
+  s += `<line x1="${f(X(dOut))}" y1="${f(Y(dOut*ppr))}" x2="${f(X(dIn))}" y2="${f(Y(dIn*ppr))}" stroke="${ink}" stroke-width="3"/>`;
+  const dim = (xa, xb, y, txt, col) => {
+    const a = Math.min(xa, xb), b = Math.max(xa, xb);
+    return `<line x1="${f(a)}" x2="${f(b)}" y1="${y}" y2="${y}" stroke="${mut}" stroke-width="0.7"/><line x1="${f(a)}" x2="${f(a)}" y1="${y-3}" y2="${y+3}" stroke="${mut}" stroke-width="0.7"/><line x1="${f(b)}" x2="${f(b)}" y1="${y-3}" y2="${y+3}" stroke="${mut}" stroke-width="0.7"/>`
+      + `<text x="${f((a+b)/2)}" y="${y-3}" text-anchor="middle" font-size="8.5" font-weight="700" fill="${col}">${txt}</text>`;
+  };
+  const yr = 42, yb = 56;
+  s += dim(X(p.B), curbX, 12, `B = ${nf(p.B,2)} m`, ink);
+  s += dim(X(dR), X(dL), 27, `a₁ = ${nf(r.a1,3)} m`, blue);
+  if (r.kh1 > 0) s += dim(X(dR), X(dOut), yr, (X(dOut) - X(dR) > 56) ? `k·h₁ = ${nf(r.kh1,3)}` : "k·h₁", ink);
+  s += dim(X(dOut), X(dIn), yr, (X(dIn) - X(dOut) > 42) ? `a = ${nf(p.a,3)}` : "a", ink);
+  if (p.bobr > 0){
+    s += dim(X(dIn), curbX, yb, "", ink);
+    s += `<text x="${f(X(dIn)-4)}" y="${yb+3}" text-anchor="end" font-size="8.5" font-weight="700" fill="${ink}">${sb("b","obr",` = ${nf(p.bobr,3)}`)}</text>`;
+  }
+  [X(p.B), curbX].forEach(x => s += `<line x1="${f(x)}" x2="${f(x)}" y1="9" y2="${f(x === curbX ? Y(p.B*ppr)-14 : Y(r.h))}" stroke="${mut}" stroke-width="0.6" stroke-dasharray="2 2"/>`);
+  [X(dR), X(dL)].forEach(x => s += `<line x1="${f(x)}" x2="${f(x)}" y1="24" y2="${f(Y(r.h))}" stroke="${mut}" stroke-width="0.6" stroke-dasharray="2 2"/>`);
+  [X(dOut), X(dIn)].forEach(x => s += `<line x1="${f(x)}" x2="${f(x)}" y1="${yr-3}" y2="${f(Y(r.h))}" stroke="${mut}" stroke-width="0.6" stroke-dasharray="2 2"/>`);
+  const ax = X(p.bobr + p.a/2), zAx = (p.bobr + p.a/2)*ppr;
+  s += `<line x1="${f(ax)}" x2="${f(ax)}" y1="${f(Y(r.h))}" y2="${f(Y(zAx))}" stroke="${blue}" stroke-width="1.2"/>`;
+  s += `<text x="${f(ax)}" y="${f(Y(r.h)-3)}" text-anchor="middle" font-size="8.5" font-weight="700" fill="${blue}" paint-order="stroke" stroke="#fff" stroke-width="3">${sb("h","1",` = ${nf(r.h1*1000,1)} mm`)}</text>`;
+  const vx = curbX + 22;
+  s += `<line x1="${vx}" x2="${vx}" y1="${f(Y(r.h))}" y2="${baseY}" stroke="${mut}" stroke-width="0.7"/><line x1="${curbX+14}" x2="${vx+3}" y1="${f(Y(r.h))}" y2="${f(Y(r.h))}" stroke="${mut}" stroke-width="0.7"/><line x1="${curbX+14}" x2="${vx+3}" y1="${baseY}" y2="${baseY}" stroke="${mut}" stroke-width="0.7"/>`;
+  s += `<text x="${vx+4}" y="${f((Y(r.h)+baseY)/2-2)}" font-size="8.5" font-weight="700" fill="${blue}">h =</text><text x="${vx+4}" y="${f((Y(r.h)+baseY)/2+8)}" font-size="8.5" font-weight="700" fill="${blue}">${nf(r.h*1000,1)} mm</text>`;
+  s += `<text x="${left}" y="${f(Y(zMax)+40)}" font-size="8.5" fill="${mut}">${sb("P","pr",` = ${nf(p.ppr,2)} %`)}</text>`;
+  s += `<text x="${left}" y="${H-4}" font-size="8" fill="${mut}">výšky prevýšené ${nf(exag,0)}×, šrafa = plocha A₁</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Priečny rez rigolom">${s}</svg>`;
 }
 
 /* small light chart for the A4 protocol */
@@ -817,20 +862,17 @@ function renderSteps(p, r){
     tile({label: "Využitie mriežky h′<sub>1</sub> / h<sub>max</sub>", value: nf(r.h1*1000,1), unit: "mm", gauge: r.h1*1000/r.hmax, note: `h<sub>max</sub> ${nf(r.hmax,1)} mm${r.slot ? ` · štrbiny ${r.slot}` : ""}`, kind: r.okH ? "ok" : "bad"}),
     tile(r.vlim ? {label: "Rýchlosť v′ / rozsah grafu", value: nf(r.vs,2), unit: "m/s", gauge: r.vs/r.vlim, note: `max. ${nf(r.vlim,1)} m/s`, kind: r.okV ? "ok" : "bad"}
                 : {label: "Rýchlosť vody na povrchu v′", value: nf(r.vs,2), unit: "m/s", note: "rozsah over u výrobcu", kind: "warn"}),
-    tile({label: "Hltnosť H<sub>od</sub>", value: nf(r.Hod,2), unit: "l/s", note: "→ do kroku 2", kind: "next"}),
-    tile({label: "Prietok v rigole Q", value: nf(r.Q,2), unit: "l/s", note: `zachytí ${nf(r.Hod/r.Q*100,0)} % · v = ${nf(r.v,2)} m/s`})
+    tile({label: "Hltnosť H<sub>od</sub>", value: nf(r.Hod,2), unit: "l/s", note: "→ do kroku 2", kind: "next"})
   ].join("");
   $("tiles2").innerHTML = [
     tile({label: "Rozostup L / L<sub>odv</sub>", value: nf(r.Lreal,2), unit: "m", gauge: r.Lreal/r.Lodv, note: `max. ${nf(r.Lodv,2)} m`, kind: "ok"}),
     tile({label: p.lines > 1 ? "Odvodňovačov spolu" : "Odvodňovačov v línii", value: String(p.lines > 1 ? r.ntot : r.nodv), unit: "ks", note: p.lines > 1 ? `${r.nodv} ks × ${p.lines} línie` : `po ${nf(r.Lreal,2)} m`}),
-    tile({label: "Prítok z mosta Q<sub>M</sub>", value: nf(r.QM,2), unit: "l/s", note: "→ do kroku 3", kind: "next"}),
-    tile({label: "Odvodňovaná plocha F<sub>m</sub>", value: nf(r.Fm,0), unit: "m²", note: "š · l"})
+    tile({label: "Prítok z mosta Q<sub>M</sub>", value: nf(r.QM,2), unit: "l/s", note: "→ do kroku 3", kind: "next"})
   ].join("");
   $("tiles3").innerHTML = [
     tile({label: "Využitie potrubia Q<sub>M</sub> / Q<sub>pot</sub>", value: nf(r.QM,2), unit: "l/s", gauge: r.QM/r.Qp, note: r.okP ? "kapacita stačí" : "kapacita nestačí", kind: r.okP ? "ok" : "bad"}),
     tile({label: "Kapacita Q<sub>pot</sub>", value: nf(r.Qp,2), unit: "l/s", note: "→ do protokolu", kind: "next"}),
-    tile({label: "Rýchlosť v potrubí", value: nf(r.vp,2), unit: "m/s", note: "Manning–Chézy"}),
-    tile({label: "Stredový uhol α", value: nf(r.theta,1), unit: "°", note: `pri h/d ${nf(p.fill,1)} %`})
+    tile({label: "Rýchlosť v potrubí", value: nf(r.vp,2), unit: "m/s", note: "Manning–Chézy"})
   ].join("");
   $("carry2").innerHTML = `<div class="chip"><span class="cl">Hltnosť odvodňovača <b>H<sub>od</sub></b><em>← z kroku 1</em></span><span class="cv">${nf(r.Hod,2)} <small>l/s</small></span></div>`;
   $("carry3").innerHTML = `<div class="chip"><span class="cl">Prítok z mosta <b>Q<sub>M</sub></b><em>← z kroku 2</em></span><span class="cv">${nf(r.QM,2)} <small>l/s</small></span></div>`;
@@ -849,7 +891,7 @@ function renderProtocol(p, r, g1, g2, g3){
   const rhs = t => { t = t || ""; const i = t.indexOf(" = "); return i >= 0 ? t.slice(i + 3) : t; };
   const trs = groups => groups.flatMap(gr => gr.rows).map(row => `<tr class="${row.cls || ""}"><td class="s">${row[0]}</td><td class="n">${row[1]}</td><td class="f">${rhs(row[5])}</td><td class="v">${val(row)} ${row[3]}</td></tr>`).join("");
   const tbl = (groups) => `<table><thead><tr><th>Symbol</th><th>Veličina</th><th>Vzorec</th><th style="text-align:right">Hodnota</th></tr></thead><tbody>${trs(groups)}</tbody></table>`;
-  const inputs = GROUPS.map(gr => `<table><thead><tr><th colspan="3">${gr.title}</th></tr></thead><tbody>${gr.fields.filter(f => f.type !== "select" && (!f.customOnly || p.typ === "custom")).map(f => `<tr><td class="s">${f.sym}</td><td class="n">${f.name}</td><td class="v">${esc(String(state[f.id]).trim())} ${f.unit}</td></tr>`).join("")}</tbody></table>`).join("");
+  const inputs = GROUPS.map(gr => `<table><thead><tr><th colspan="3">${gr.title}</th></tr></thead><tbody>${gr.fields.filter(f => f.type !== "select").map(f => `<tr><td class="s">${f.sym}</td><td class="n">${f.name}</td><td class="v">${esc(String(state[f.id]).trim())} ${f.unit}</td></tr>`).join("")}</tbody></table>`).join("");
   const box = (title, ok, text, status) => `<div class="box ${ok ? "" : "bad"}"><div class="bh"><span>${title}</span><span>${status || (ok ? "VYHOVUJE" : "NEVYHOVUJE")}</span></div><div>${text}</div></div>`;
   const today = new Date().toLocaleDateString("sk-SK");
   $("sheet").innerHTML = `
@@ -860,7 +902,8 @@ function renderProtocol(p, r, g1, g2, g3){
     <section><h2>1 Vstupné údaje</h2><div class="g3">${inputs}</div></section>
     <section class="row2">
       <div><h2>2 Hltnosť odvodňovača</h2>${tbl(g1)}</div>
-      <figure><figcaption>Graf hltnosti – ${g.label.toLowerCase()}</figcaption>${capSmall(p, r)}
+      <figure><figcaption>Priečny rez rigolom</figcaption>${crossSmall(p, r)}
+        <figcaption>Graf hltnosti – ${g.label.toLowerCase()}</figcaption>${capSmall(p, r)}
         ${box("h′₁ ≤ h max", ok1, ok1 ? `Rezerva ${nf(r.hmax - r.h1*1000,1)} mm${r.slot ? `, pretekané štrbiny ${r.slot}` : ""}.` : (r.okV ? "Bod leží v oblasti pretoku." : "Rýchlosť v′ je mimo rozsahu grafu."))}
       </figure>
     </section>
@@ -869,15 +912,11 @@ function renderProtocol(p, r, g1, g2, g3){
       ${box("Hltnosť", ok1, `${g.label}: h′₁ = ${nf(r.h1*1000,1)} ${r.okH ? "≤" : ">"} ${nf(r.hmax,1)} mm, H<sub>od</sub> = ${nf(r.Hod,2)} l/s.`)}
       ${box("Rozmiestnenie", ok1, `${r.nodv} ks v línii po ${nf(r.Lreal,2)} m (max. ${nf(r.Lodv,2)} m)${p.lines > 1 ? `, spolu ${r.ntot} ks` : ""}.`, ok1 ? "NÁVRH" : "NEOVERENÉ")}
       ${box("Potrubie", r.okP, `DN ${nf(p.dpot*1000,0)}, i = ${nf(p.ipot,2)} %: Q<sub>pot</sub> = ${nf(r.Qp,2)} ${r.okP ? "≥" : "<"} ${nf(r.QM,2)} l/s.`)}
-    </div></section>
-    <div class="sh-foot">
-      <div style="max-width:430px">Postup podľa výpočtového listu 205-00. Grafy hltnosti sú zdigitalizované z podkladov výrobcu, presnosť odčítania ±0,5 mm. Za posúdenie zodpovedá projektant.</div>
-      <div style="display:flex;gap:24px"><div>Vypracoval<br><b style="color:#1C2226">${esc(state.autor || "–")}</b></div><div class="sign">Podpis<div></div></div></div>
-    </div>`;
+    </div></section>`;
 
   // plain-text protocol for clipboard
   const fmt = row => `${plain(row[0])}\t${row[1]}\t${val(row)}\t${plain(row[3])}`;
-  const inputsTxt = GROUPS.flatMap(gr => gr.fields).filter(f => f.type !== "select" && (!f.customOnly || p.typ === "custom"))
+  const inputsTxt = GROUPS.flatMap(gr => gr.fields).filter(f => f.type !== "select")
     .map(f => `${plain(f.sym)}\t${f.name}\t${String(state[f.id]).trim()}\t${f.unit}`);
   lastRows = [
     "VÝPOČET ODVODNENIA MOSTA", `Stavba\t${state.stavba || ""}`, `Objekt\t${state.objekt || ""}`, `Typ odvodňovača\t${g.label}`, "",
@@ -892,9 +931,8 @@ function renderProtocol(p, r, g1, g2, g3){
 function update(){
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e) {}
   const g = GRATES[state.typ];
-  $("typinfo").innerHTML = g.info + (g.a ? ` Šírka a sa pri zmene typu nastaví na ${g.a} m.` : "");
+  $("typinfo").innerHTML = g.info + ` Šírka rámu a = ${g.a} m je daná typom.`;
   document.querySelectorAll(".grates button").forEach(b => b.setAttribute("aria-pressed", b.dataset.typ === state.typ ? "true" : "false"));
-  document.querySelectorAll(".customonly").forEach(el => el.classList.toggle("hidden", state.typ !== "custom"));
   const {p, bad} = readParams();
   GROUPS.flatMap(gr => gr.fields).filter(f => f.type !== "select").forEach(f => {
     $("box-" + f.id).classList.toggle("err", bad.includes(f.id));
@@ -921,7 +959,7 @@ $("copy").addEventListener("click", async () => {
 });
 $("print").addEventListener("click", () => window.print());
 window.addEventListener("beforeprint", () => { if (step !== 4) goStep(4); });
-$("reset").addEventListener("click", () => { state = {...DEFAULTS}; fillInputs(); update(); toast("Obnovené hodnoty z výpočtového listu 205-00"); });
+$("reset").addEventListener("click", () => { state = {...DEFAULTS, a: GRATES[DEFAULTS.typ].a}; fillInputs(); update(); toast("Obnovené hodnoty z výpočtového listu 205-00"); });
 
 buildInputs();
 setupAnim();

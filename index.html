@@ -21,10 +21,10 @@
       </div>
     </div>
     <nav class="steps" aria-label="Kroky výpočtu">
-      <button type="button" data-step="1"><span class="num">1</span><span>Hltnosť</span><span class="dot" id="dot1"></span></button>
-      <button type="button" data-step="2"><span class="num">2</span><span>Rozostup</span><span class="dot" id="dot2"></span></button>
-      <button type="button" data-step="3"><span class="num">3</span><span>Potrubie</span><span class="dot" id="dot3"></span></button>
-      <button type="button" data-step="4"><span class="num">4</span><span>Protokol</span><span class="dot" id="dot4"></span></button>
+      <button type="button" data-step="1"><span>Hltnosť</span><span class="dot" id="dot1"></span></button>
+      <button type="button" data-step="2"><span>Rozostup</span><span class="dot" id="dot2"></span></button>
+      <button type="button" data-step="3"><span>Potrubie</span><span class="dot" id="dot3"></span></button>
+      <button type="button" data-step="4"><span>Protokol</span><span class="dot" id="dot4"></span></button>
     </nav>
     <div class="actions">
       <button class="btn ghost" id="reset" type="button">Obnoviť príklad</button>
@@ -45,7 +45,6 @@
     <div class="content">
       <div class="stephead">
         <div class="shtext">
-          <div class="eyebrow">Krok 1 / 4</div>
           <h1 id="h1-1">Hltnosť odvodňovača</h1>
           <p class="lead">Koľko vody priteká rigolom k odvodňovaču a koľko z nej mriežka zachytí. Bod v grafe musí ležať pod hraničnou krivkou výrobcu.</p>
         </div>
@@ -63,34 +62,19 @@
         <p class="cap" id="crosscap"></p>
       </section>
       <section class="panel viz">
-        <div class="vizhead"><b>Ako odvodňovač zachytáva vodu</b><span class="muted">pôdorys rigolu v mierke a v reálnom čase</span></div>
-        <div class="animbar">
-          <button class="btn ghost sm" id="animplay" type="button">Pozastaviť</button>
-          <div class="seg" id="animsteps" role="group" aria-label="Krok vysvetlenia">
-            <button type="button" data-step="all" aria-pressed="true">Celý proces</button>
-            <button type="button" data-step="1" aria-pressed="false">1 Rozliatie</button>
-            <button type="button" data-step="2" aria-pressed="false">2 Bočný nátok</button>
-            <button type="button" data-step="3" aria-pressed="false">3 Zachytenie</button>
-            <button type="button" data-step="4" aria-pressed="false">4 Obtok</button>
-            <button type="button" data-step="5" aria-pressed="false" id="step5">5 Keď nevyhovuje</button>
-          </div>
-          <label class="spd">Rýchlosť
-            <select id="animspeed"><option value="0.25">0,25×</option><option value="0.5">0,5×</option><option value="1" selected>1× reálny čas</option><option value="2">2×</option></select>
-          </label>
-        </div>
-        <div class="canvaswrap"><canvas id="animcv" role="img" aria-label="Animácia toku vody v rigole a jej zachytenia odvodňovačom"></canvas></div>
-        <div class="legend"><span><i class="sw cap"></i>voda, ktorú odvodňovač zachytí (H<sub>od</sub>)</span><span><i class="sw pass"></i>voda, ktorá odvodňovač obtečie</span><span><i class="sw zone"></i>spolupôsobiaca šírka a<sub>1</sub></span><span><i class="sw over"></i>voda, ktorá pretečie ponad preťaženú mriežku</span></div>
-        <div class="steptext" id="steptext"></div>
-        <div class="animstats" id="animstats"></div>
-      </section>
-      <section class="panel viz">
         <div class="vizhead"><b id="captitle">Graf hltnosti</b>
           <div class="keys"><span><i class="k-top"></i>hranica hltnosti</span><span><i class="k-cur"></i>krivky podľa štrbín</span><span><i class="k-ovf"></i>pretok</span></div>
         </div>
         <div class="chartbox" id="capchart"></div>
         <p class="cap" id="capcap"></p>
       </section>
-      <div class="stepnav"><span></span><button class="btn light" type="button" data-go="2">Ďalší krok →</button></div>
+      <section class="panel viz">
+        <div class="vizhead"><b>Ako odvodňovač zachytáva vodu</b><span class="muted">pôdorys rigolu v mierke a v reálnom čase</span></div>
+        <div class="canvaswrap"><canvas id="animcv" role="img" aria-label="Animácia toku vody v rigole a jej zachytenia odvodňovačom"></canvas></div>
+        <div class="legend"><span><i class="sw cap"></i>voda, ktorú odvodňovač zachytí (H<sub>od</sub>)</span><span><i class="sw pass"></i>voda, ktorá odvodňovač obtečie</span><span><i class="sw zone"></i>spolupôsobiaca šírka a<sub>1</sub></span><span><i class="sw over"></i>voda, ktorá pretečie ponad preťaženú mriežku</span></div>
+        <div class="steptext" id="steptext"></div>
+        <div class="animstats" id="animstats"></div>
+      </section>
     </div>
   </div>
 </section>
@@ -106,7 +90,6 @@
     <div class="content">
       <div class="stephead">
         <div class="shtext">
-          <div class="eyebrow">Krok 2 / 4</div>
           <h1 id="h1-2">Vzdialenosť odvodňovačov</h1>
           <p class="lead">Koľko odvodňovačov treba v línii a v akom rozostupe, aby každý stihol zachytiť vodu zo svojho úseku mosta.</p>
         </div>
@@ -126,7 +109,6 @@
         <div class="chartbox" id="senschart"></div>
         <p class="cap" id="senscap"></p>
       </section>
-      <div class="stepnav"><button class="btn ghost" type="button" data-go="1">← Späť</button><button class="btn light" type="button" data-go="3">Ďalší krok →</button></div>
     </div>
   </div>
 </section>
@@ -142,7 +124,6 @@
     <div class="content">
       <div class="stephead">
         <div class="shtext">
-          <div class="eyebrow">Krok 3 / 4</div>
           <h1 id="h1-3">Zberné potrubie</h1>
           <p class="lead">Zvládne potrubie odviesť všetku vodu z mosta? Kapacita pri zvolenom plnení (Manning–Chézy) v porovnaní s prítokom.</p>
         </div>
@@ -174,7 +155,6 @@
         <div class="chartbox" id="pipechart"></div>
         <p class="cap" id="pipecap"></p>
       </section>
-      <div class="stepnav"><button class="btn ghost" type="button" data-go="2">← Späť</button><button class="btn light" type="button" data-go="4">Protokol →</button></div>
     </div>
   </div>
 </section>
@@ -183,7 +163,6 @@
 <section class="view wrap hidden" data-view="4" aria-labelledby="h1-4">
   <div class="stephead">
     <div class="shtext">
-      <div class="eyebrow">Krok 4 / 4</div>
       <h1 id="h1-4">Protokol</h1>
       <p class="lead">Jedna strana A4 so všetkými vstupmi, výpočtami a posúdeniami, pripravená ako posledná príloha technickej správy.</p>
     </div>
